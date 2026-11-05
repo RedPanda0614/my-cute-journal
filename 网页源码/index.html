@@ -168,8 +168,41 @@ body.wand .item.selected{cursor:crosshair}
 #toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:#3b3226;color:#fff8ea;padding:8px 16px;border-radius:4px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:100;font-size:13px}
 #toast.show{opacity:.92}
 #dropHint{position:fixed;inset:0;background:rgba(240,225,190,.55);display:none;align-items:center;justify-content:center;font-size:22px;z-index:90;pointer-events:none}
+/* ===== v0.6 ===== */
+#app{--pw:272px}
+#grip{position:absolute;right:-7px;top:0;bottom:0;width:12px;cursor:col-resize;z-index:8}
+#grip::after{content:'';position:absolute;left:5px;top:40%;height:44px;width:3px;border-radius:2px;background:#d6c2a0;opacity:0;transition:opacity .15s}
+#pane:hover #grip::after,#grip.on::after{opacity:1}
+body.resizing{cursor:col-resize;user-select:none}
+#dq{flex:1}
+.thumb .star{position:absolute;left:4px;top:2px;color:#d39a2e;font-size:12px}
+.thumb .ck{position:absolute;right:4px;top:3px;width:16px;height:16px;border-radius:50%;border:1.5px solid #cdb894;background:#fffdf7;font-size:11px;line-height:13px;text-align:center;color:transparent}
+.thumb.picked{background:#f6dfc8;box-shadow:0 0 0 2px var(--accent)}
+.thumb.picked .ck{background:var(--accent);border-color:var(--accent);color:#fff}
+#batchBar{display:none;flex-direction:column;gap:6px;padding:8px;border-top:1px solid var(--line);background:#f6eedc}
+#batchBar .txt{flex:1;min-width:0}
+#info{position:fixed;display:none;width:252px;padding:10px;z-index:60;box-shadow:0 10px 26px rgba(70,45,20,.3)}
+#info .ihead{background:#f3ead8;border-radius:3px;display:flex;align-items:center;justify-content:center;height:150px;margin-bottom:8px}
+#info .ihead img{max-width:230px;max-height:140px}
+#info .irow{display:flex;gap:6px;align-items:center;margin-bottom:6px}
+#info .irow .txt{flex:1}
+#info .ifav{border:1px solid var(--line);background:#fffdf7;border-radius:3px;cursor:pointer;font-size:15px;width:30px;height:28px;color:var(--soft)}
+#info .ifav.on{color:#d39a2e}
+#info .chips{margin:4px 0 8px;align-items:center}
+#info .chips b{cursor:pointer;font-weight:400;color:var(--soft);margin-left:2px}
+#info #iTagIn{width:90px;padding:2px 5px;font-size:12px}
+#info .imeta{margin-bottom:8px}
+#info .cb{border:1px solid var(--line);background:#fffdf7;padding:4px 9px;border-radius:3px;cursor:pointer}
+#info .cb.warn{color:var(--accent)}
+.cb{border:1px solid var(--line);background:#fffdf7;padding:3px 8px;border-radius:3px;cursor:pointer;white-space:nowrap}
+.cb:hover{background:#fff4dc}.cb.on{background:#f6dfc8;border-color:#dbb08f}.cb.warn{color:var(--accent)}
+.seg{display:flex;gap:0;margin:8px 0 4px;border:1px solid var(--line);border-radius:5px;overflow:hidden;width:max-content}
+.seg button{border:none;background:#fffdf7;padding:6px 14px;cursor:pointer;border-right:1px solid var(--line)}
+.seg button:last-child{border-right:none}
+.seg button.on{background:var(--accent);color:#fff}
+.upbox small{font-size:11px}
 /* ===== C 布局:一列图标 + 一个侧栏 + 纸上方的属性条 ===== */
-#app{grid-template-columns:62px 272px minmax(0,1fr)!important;grid-template-rows:48px minmax(0,1fr)!important}
+#app{grid-template-columns:62px var(--pw) minmax(0,1fr)!important;grid-template-rows:48px minmax(0,1fr)!important}
 #app.folded{grid-template-columns:62px 0 minmax(0,1fr)!important}
 #app.folded #pane{display:none}
 #top{grid-column:1/4!important}
@@ -180,7 +213,8 @@ body.wand .item.selected{cursor:crosshair}
 .ri.on{background:#f6dfc8;box-shadow:0 0 0 2px var(--accent)}
 .ri.small{background:transparent;box-shadow:none;color:#fffaf0}
 .ri.small i{font-size:15px}
-#pane{grid-column:2;grid-row:2;overflow:hidden;display:flex;flex-direction:column}
+#pane{grid-column:2;grid-row:2;overflow:visible;display:flex;flex-direction:column;position:relative;min-width:0}
+#pane>.pn{overflow:auto}
 .pn{display:none;flex-direction:column;gap:6px;padding:12px;overflow:auto;min-height:0;flex:1}
 .pn.on{display:flex}
 .pn h3{margin:0 0 2px;font-size:15px}
@@ -230,7 +264,7 @@ body.wand .item.selected{cursor:crosshair}
 </defs></svg>
 <div id="app">
  <header id="top" class="panel">
-  <div id="brand">手帐工作台 <i>v0.5</i></div>
+  <div id="brand">手帐工作台 <i>v0.6</i></div>
   <select id="pSize" class="sel" title="纸张尺寸"></select>
   <div id="customWrap" class="row" style="display:none">
    <input id="cW" class="txt" style="width:56px" type="number" min="30" max="400"> ×
@@ -270,12 +304,13 @@ body.wand .item.selected{cursor:crosshair}
   <button class="ri small" id="bFold" title="收起 / 展开侧栏"><i>«</i>收起</button>
  </nav>
 
- <aside id="pane" class="panel">
+ <aside id="pane" class="panel"><div id="grip" title="拖动调宽度,双击恢复"></div>
   <section class="pn on" data-pane="assets">
    <div id="dtabs"><div id="tabList"></div></div>
-   <div id="dfind"><input id="dq" class="txt" placeholder="找素材:名字或标签"><div id="dcols"></div></div>
+   <div id="dfind"><div class="row nowrap"><input id="dq" class="txt" placeholder="找素材:名字或标签"><button class="cb" id="bBatch" title="多选后批量打标签、换分类">多选</button></div><div id="dcols"></div></div>
    <div id="dgrid"></div>
-   <div class="pfoot mini">点一下放到纸中间,拖过去放在想要的位置。拖到上面的分类标签上能换分类。</div>
+   <div class="pfoot mini">点一下放到纸中间,拖过去放在想要的位置。鼠标停一下看详情、改标签。</div>
+   <div id="batchBar"></div>
   </section>
 
   <section class="pn" data-pane="text">
@@ -325,9 +360,8 @@ body.wand .item.selected{cursor:crosshair}
    <h3>生图任务单</h3>
    <div id="skillCards"><div class="mini">这些要生图,网页里跑不了。点开会生成一张任务单,复制给 agent 做。做好后在下面导入。</div></div>
    <h3 style="margin-top:14px">素材收件箱</h3>
-   <div class="mini">agent 做好的图片在这里导入,会放进素材里的「工具生成」。</div>
+   <div class="mini">agent 做好的图片在这里导入,导入时也能去背景、拆开、剪裁,默认放进「工具生成」。</div>
    <button class="tool" id="bInbox">导入图片…</button>
-   <button class="tool" id="bSheet">导入整张素材页,自动拆开…</button>
   </section>
  </aside>
 
@@ -346,6 +380,7 @@ body.wand .item.selected{cursor:crosshair}
 <img id="ghost" alt="">
 <div id="modal"><div id="mbox" class="panel"></div></div>
 <div id="toast"></div>
+<div id="info" class="panel"></div>
 <div id="dropHint">松手就放进「我的上传」</div>
 
 <script>
@@ -792,35 +827,66 @@ window.addEventListener('pointerup',()=>{if(!drag)return;const d=drag;drag=null;
 
 /* ---------- 下面:素材抽屉 ---------- */
 function drawerRender(){
- tabsRender();const g=$('#dgrid');g.innerHTML='';
- if(tab==='upload'||cats.some(c=>c.id===tab)){const u=document.createElement('div');u.className='upbox';u.innerHTML='＋ 上传图片<br>或直接拖进窗口';u.onclick=()=>$('#fUp').click();g.appendChild(u);
-  const v=document.createElement('div');v.className='upbox';v.innerHTML='＋ 整张素材页<br>自动拆开';v.title='一张图上有很多小素材(贴纸页、素材合集),自动拆成一个一个';v.onclick=pickSheet;g.appendChild(v)}
- if(tab==='tool'){const u=document.createElement('div');u.className='upbox';u.innerHTML='＋ 从收件箱<br>导入';u.onclick=()=>$('#fInbox').click();g.appendChild(u)}
+ tabsRender();const g=$('#dgrid');g.innerHTML='';hideInfo(true);
+ if(tab==='upload'||tab==='tool'||cats.some(c=>c.id===tab)){const u=document.createElement('div');u.className='upbox';
+  u.innerHTML=tab==='tool'?'<span>＋ 导入<br>生成好的图</span>':'<span>＋ 上传图片<br><small>也能直接拖进窗口</small></span>';
+  u.onclick=()=>(tab==='tool'?$('#fInbox'):$('#fUp')).click();g.appendChild(u)}
  const q=dq.toLowerCase();
  const list=Object.values(assets).filter(a=>!a.hidden&&(tab==='all'||(tab==='fav'?a.fav:a.cat===tab))&&(!dcol||a.color===dcol)&&(!q||a.name.toLowerCase().includes(q)||a.tags.some(t=>t.toLowerCase().includes(q))));
- if(!list.length&&!['upload','tool'].includes(tab)){const e=document.createElement('div');e.className='empty';e.textContent=tab==='fav'&&!q&&!dcol?'还没有收藏。鼠标放到素材上,点左上角的 ☆。':'没找到。换个词或颜色试试。';g.appendChild(e)}
+ if(!list.length&&!['upload','tool'].includes(tab)){const e=document.createElement('div');e.className='empty';e.textContent=tab==='fav'&&!q&&!dcol?'还没有收藏。鼠标停在素材上,在弹出的卡片里点 ☆。':'没找到。换个词或颜色试试。';g.appendChild(e)}
  list.forEach(a=>{
-  const t=document.createElement('div');t.className='thumb';t.title=a.name+(a.tags.length?' #'+a.tags.join(' #'):'')+' · 点一下放到纸中间,或拖到想放的位置';t.innerHTML=`<img src="${a.src}"><span class="nm">${a.name}</span>`;
-  const fv=document.createElement('button');fv.className='fv'+(a.fav?' on':'');fv.textContent=a.fav?'★':'☆';fv.title='收藏';
-  fv.onpointerdown=e=>e.stopPropagation();fv.onclick=e=>{e.stopPropagation();a.fav=!a.fav;save();drawerRender()};t.appendChild(fv);
-  const tg=document.createElement('button');tg.className='tg';tg.textContent='#';tg.title='改名字和标签';
-  tg.onpointerdown=e=>e.stopPropagation();tg.onclick=e=>{e.stopPropagation();tagEditor(a)};t.appendChild(tg);
-  if(a.source!=='built-in'){const x=document.createElement('button');x.className='x';x.textContent='×';x.title='从抽屉拿掉(纸上的不受影响)';
-   x.onpointerdown=e=>e.stopPropagation();x.onclick=e=>{e.stopPropagation();a.hidden=true;save();drawerRender()};t.appendChild(x)}
-  t.addEventListener('pointerdown',e=>startThumbDrag(e,a));g.appendChild(t)});
+  const t=document.createElement('div');t.className='thumb'+(batch&&picked.has(a.id)?' picked':'');t.dataset.id=a.id;
+  t.innerHTML=`<img src="${a.src}"><span class="nm">${a.name}</span>${a.fav?'<span class="star">★</span>':''}${batch?'<span class="ck">✓</span>':''}`;
+  t.addEventListener('pointerdown',e=>{if(batch){e.preventDefault();picked.has(a.id)?picked.delete(a.id):picked.add(a.id);t.classList.toggle('picked');batchBar();return}hideInfo(true);startThumbDrag(e,a)});
+  t.addEventListener('mouseenter',()=>{if(batch||drag)return;clearTimeout(hov.t);hov.t=setTimeout(()=>showInfo(a,t),320)});
+  t.addEventListener('mouseleave',()=>{clearTimeout(hov.t);hov.t=setTimeout(()=>hideInfo(),220)});
+  g.appendChild(t)});
+ batchBar();
 }
+/* ---------- 素材详情卡(鼠标停在素材上) ---------- */
+const hov={t:null,a:null,dirty:false};
+function showInfo(a,el){const C=$('#info'),esc=v=>String(v).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');hov.a=a;
+ C.innerHTML=`<div class="ihead"><img src="${a.src}"></div>
+ <div class="irow"><input id="iName" class="txt" value="${esc(a.name)}"><button class="ifav ${a.fav?'on':''}" id="iFav" title="收藏">${a.fav?'★':'☆'}</button></div>
+ <div class="irow"><span class="mini">分类</span><select id="iCat" class="sel">${allCats().map(c=>`<option value="${c.id}" ${c.id===a.cat?'selected':''}>${c.name}</option>`).join('')}</select></div>
+ <div class="mini">标签</div><div class="chips" id="iTags">${a.tags.map(t=>`<span>${esc(t)} <b data-t="${esc(t)}">×</b></span>`).join('')}<input id="iTagIn" class="txt" placeholder="+ 标签,回车"></div>
+ <div class="mini imeta">${a.w}×${a.h} · 颜色 ${a.color||'—'} · ${{'built-in':'自带',upload:'上传',tool:'工具生成',edit:'编辑过'}[a.source]||a.source}</div>
+ <div class="irow"><button class="cb" id="iPut">放到纸上</button>${a.source!=='built-in'?'<button class="cb warn" id="iDel">移出素材栏</button>':''}</div>`;
+ const r=el.getBoundingClientRect(),pane=$('#pane').getBoundingClientRect();C.style.display='block';
+ const h=C.offsetHeight;C.style.left=(pane.right+8)+'px';C.style.top=Math.max(56,Math.min(innerHeight-h-8,r.top-10))+'px';
+ const set=()=>{hov.dirty=true;save()};
+ $('#iName').onchange=e=>{a.name=e.target.value.trim()||a.name;state.pages.forEach(p=>p.items.forEach(i=>{if(i.asset===a.id||i.orig===a.id)i.name=a.name}));set();renderLayers()};
+ $('#iFav').onclick=()=>{a.fav=!a.fav;$('#iFav').textContent=a.fav?'★':'☆';$('#iFav').classList.toggle('on',a.fav);set()};
+ $('#iCat').onchange=e=>{a.cat=e.target.value;set()};
+ const tagsUI=()=>{$('#iTags').querySelectorAll('span').forEach(s=>s.remove());a.tags.forEach(t=>{const s=document.createElement('span');s.innerHTML=`${esc(t)} <b>×</b>`;s.querySelector('b').onclick=()=>{a.tags=a.tags.filter(x=>x!==t);set();tagsUI()};$('#iTags').insertBefore(s,$('#iTagIn'))})};
+ tagsUI();
+ $('#iTagIn').onkeydown=e=>{if(e.key==='Enter'){const v=e.target.value.split(/[\s,，]+/).filter(Boolean);if(v.length){a.tags=[...new Set([...a.tags,...v])];e.target.value='';set();tagsUI()}}};
+ $('#iPut').onclick=()=>{addItem(a);hideInfo(true)};
+ if($('#iDel'))$('#iDel').onclick=()=>{a.hidden=true;hov.dirty=true;save();hideInfo(true)}
+ C.onmouseenter=()=>clearTimeout(hov.t);C.onmouseleave=()=>{clearTimeout(hov.t);hov.t=setTimeout(()=>hideInfo(),260)}}
+function hideInfo(now){const C=$('#info');if(!C||C.style.display!=='block')return;
+ if(!now&&(C.matches(':hover')||C.contains(document.activeElement)))return;
+ C.style.display='none';hov.a=null;if(hov.dirty){hov.dirty=false;setTimeout(drawerRender,0)}}
+/* ---------- 多选:批量打标签 ---------- */
+let batch=false;const picked=new Set();
+function setBatch(v){batch=v;picked.clear();$('#bBatch').classList.toggle('on',v);$('#bBatch').textContent=v?'完成':'多选';drawerRender()}
+function batchBar(){const B=$('#batchBar');if(!B)return;B.style.display=batch?'flex':'none';$('.pfoot').style.display=batch?'none':'block';if(!batch)return;
+ const n=picked.size;
+ B.innerHTML=`<div class="row"><b>已选 ${n} 个</b><button class="cb" id="kAll">全选</button><button class="cb" id="kNone">清空</button></div>
+ <div class="row nowrap"><input id="kTag" class="txt" placeholder="标签,空格分开"><button class="cb" id="kAdd">加上</button><button class="cb" id="kRm">去掉</button></div>
+ <div class="row"><select id="kCat" class="sel"><option value="">移到分类…</option>${allCats().map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}</select>
+  <button class="cb" id="kFav">收藏</button><button class="cb" id="kUnfav">取消收藏</button><button class="cb warn" id="kHide">移出素材栏</button></div>`;
+ const sel=()=>[...picked].map(id=>assets[id]).filter(Boolean),done=m=>{save();drawerRender();toast(m)};
+ $('#kAll').onclick=()=>{$$('#dgrid .thumb').forEach(t=>picked.add(t.dataset.id));drawerRender()};
+ $('#kNone').onclick=()=>{picked.clear();drawerRender()};
+ const tags=()=>$('#kTag').value.split(/[\s,，]+/).filter(Boolean);
+ $('#kAdd').onclick=()=>{const t=tags();if(!n||!t.length)return toast(n?'先写标签':'先点选素材');sel().forEach(a=>a.tags=[...new Set([...a.tags,...t])]);done(`给 ${n} 个素材加上了 ${t.join(' ')}`)};
+ $('#kRm').onclick=()=>{const t=tags();if(!n||!t.length)return toast(n?'先写要去掉的标签':'先点选素材');sel().forEach(a=>a.tags=a.tags.filter(x=>!t.includes(x)));done('去掉了')};
+ $('#kCat').onchange=e=>{if(!e.target.value||!n)return;sel().forEach(a=>a.cat=e.target.value);done(`移到了「${catName(e.target.value)}」`)};
+ $('#kFav').onclick=()=>{sel().forEach(a=>a.fav=true);done('收藏了')};$('#kUnfav').onclick=()=>{sel().forEach(a=>a.fav=false);done('取消了')};
+ $('#kHide').onclick=()=>{if(!n)return;const L=sel();L.forEach(a=>a.hidden=true);picked.clear();done(`${L.length} 个移出了素材栏(纸上的不受影响)`)}}
 function allTags(){const m={};Object.values(assets).forEach(a=>!a.hidden&&a.tags.forEach(t=>m[t]=(m[t]||0)+1));return Object.keys(m).sort((a,b)=>m[b]-m[a])}
-function tagEditor(a){$('#mbox').innerHTML=`<h3>改标签</h3><div class="row" style="flex-wrap:nowrap;gap:10px;margin:8px 0"><img src="${a.src}" style="width:70px;height:70px;object-fit:contain;background:#f3ead8;border-radius:3px">
- <div style="flex:1"><label class="mini">名字</label><input id="gName" class="txt" value="${a.name.replace(/"/g,'&quot;')}"></div></div>
- <label class="mini">标签(用空格或逗号分开)</label><input id="gTags" class="txt" value="${a.tags.join(' ')}" placeholder="比如:秋天 旅行 芝加哥">
- <div class="mini" style="margin-top:8px">点一下加上:</div><div class="chips" id="gChips">${allTags().slice(0,24).map(t=>`<span>${t}</span>`).join('')}</div>
- <div class="row" style="margin-top:8px"><span class="mini">分类</span><select id="gCat" class="sel">${allCats().map(c=>`<option value="${c.id}" ${c.id===a.cat?'selected':''}>${c.name}</option>`).join('')}</select><span class="mini">颜色:${a.color||'没认出来'}</span></div>
- <div class="row" style="margin-top:12px;justify-content:flex-end"><button class="tag red" id="gOk">好了</button><button class="tag" id="gNo">取消</button></div>`;
- $$('#gChips span').forEach(c=>c.onclick=()=>{const v=$('#gTags').value.trim();if(!v.split(/[\s,，]+/).includes(c.textContent))$('#gTags').value=(v+' '+c.textContent).trim()});
- $('#gOk').onclick=()=>{a.name=$('#gName').value.trim()||a.name;a.cat=$('#gCat').value;tabsRender();a.tags=[...new Set($('#gTags').value.split(/[\s,，]+/).filter(Boolean))];
-  state.items.forEach(i=>{if(i.asset===a.id||i.orig===a.id)i.name=a.name});save();drawerRender();renderPanel();$('#modal').classList.remove('show')};
- $('#gNo').onclick=()=>$('#modal').classList.remove('show');openModal();setTimeout(()=>$('#gTags').focus(),50)}
-function metaOf(){const m={};Object.values(assets).filter(a=>a.source==='built-in').forEach(a=>m[a.id]={fav:a.fav,tags:a.tags,name:a.name,cat:a.cat});m.__cats=cats;return m}
+function metaOf(){const m={};Object.values(assets).filter(a=>a.source==='built-in').forEach(a=>m[a.id]={fav:a.fav,tags:a.tags,name:a.name,cat:a.cat,hidden:a.hidden});m.__cats=cats;return m}
 function applyMeta(m){if(!m)return;if(m.__cats)cats=m.__cats;for(const id in m)if(assets[id])Object.assign(assets[id],m[id])}
 function startThumbDrag(e,a){e.preventDefault();const gh=$('#ghost'),sx=e.clientX,sy=e.clientY;let moving=false;gh.src=a.src;
  const mv=ev=>{if(!moving&&Math.hypot(ev.clientX-sx,ev.clientY-sy)>5){moving=true;gh.style.display='block'}if(moving){gh.style.left=ev.clientX-40+'px';gh.style.top=ev.clientY-40+'px';const el=document.elementFromPoint(ev.clientX,ev.clientY),tb=el&&el.closest('#dtabs .t');$$('#dtabs .t').forEach(b=>b.classList.toggle('drop',b===tb&&b.dataset.tab&&b.dataset.tab!=='all'))}};
@@ -831,14 +897,75 @@ function startThumbDrag(e,a){e.preventDefault();const gh=$('#ghost'),sx=e.client
   if(tb&&tb.dataset.tab==='fav'){a.fav=true;save();tabsRender();drawerRender();return toast('收藏了')}
   if(el&&el.closest('#mat')){const p=pageMM(ev);addItem(a,p.x,p.y)}};
  window.addEventListener('pointermove',mv);window.addEventListener('pointerup',up)}
-async function importFiles(files,source){let n=0;
+/* ---------- 上传:一个入口,上传后选怎么处理 ---------- */
+let UQ=null;
+async function startUpload(files,cat='upload'){const list=[];
  for(const f of files){if(!f.type.startsWith('image/')&&!/\.heic$/i.test(f.name))continue;
-  try{const url=URL.createObjectURL(f);const im=await new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=url});
-   const k=Math.min(1,2000/Math.max(im.naturalWidth,im.naturalHeight)),c=cv(im.naturalWidth*k,im.naturalHeight*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(url);
-   const jpg=/jpe?g|heic/i.test(f.type+f.name);
-   await addAsset(c.toDataURL(jpg?'image/jpeg':'image/png',.9),{name:f.name.replace(/\.[^.]+$/,''),source,cat:source==='upload'&&cats.some(x=>x.id===tab)?tab:source});n++}
-  catch(err){toast(f.name+' 打不开。HEIC 可以先转成 jpg')}}
- if(n){if(!(source==='upload'&&cats.some(x=>x.id===tab)))setTab(source);else drawerRender();tabsRender();save();toast(`放进了 ${n} 张`)}}
+  try{const url=URL.createObjectURL(f),im=await new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=url});
+   const k=Math.min(1,2400/Math.max(im.naturalWidth,im.naturalHeight)),c=cv(im.naturalWidth*k,im.naturalHeight*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(url);
+   list.push({c,name:f.name.replace(/\.[^.]+$/,''),jpg:/jpe?g|heic/i.test(f.type+f.name)})}catch(e){toast(f.name+' 打不开。HEIC 可以先转成 jpg')}}
+ if(!list.length)return;
+ UQ={list,i:0,cat,mode:UQ?.mode||'whole',tol:UQ?.tol||30,merge:UQ?.merge||6,stick:false,cropKey:false,saved:0};showUpload()}
+const UMODES=[['whole','整张保存','原样放进素材栏'],['key','去背景','把背景去掉,只留主体'],['split','拆成小素材','一张图上有好几个东西,分别保存'],['crop','剪裁','只留框住的那一块']];
+function showUpload(){const U=UQ,it=U.list[U.i],n=U.list.length,esc=v=>String(v).replace(/"/g,'&quot;');
+ SH={src:it.c,name:it.name,mode:U.mode==='split'?'split':U.mode==='crop'?'crop':'view',boxes:[],tol:U.tol,merge:U.merge,stick:U.stick,key:U.mode==='crop'?U.cropKey:true};
+ $('#mbox').innerHTML=`<h3>上传${n>1?` · 第 ${U.i+1}/${n} 张`:''}</h3>
+ <div class="seg">${UMODES.map(([k,l])=>`<button data-m="${k}" class="${k===U.mode?'on':''}">${l}</button>`).join('')}</div>
+ <div class="mini" id="upHint">${UMODES.find(m=>m[0]===U.mode)[2]}${U.mode==='split'?'。点框可以取消或选回,在空白处拖一下能自己补一个框':U.mode==='crop'?'。在图上拖一个框':''}</div>
+ <div id="shWrap"><canvas id="shCv"></canvas><div id="shBoxes"></div></div>
+ <div class="shCtl">
+  ${['key','split'].includes(U.mode)?`<div class="prop"><span>背景容差</span><input type="range" id="shTol" min="6" max="90" value="${U.tol}"><span id="shTolV">${U.tol}</span></div>`:''}
+  ${U.mode==='split'?`<div class="prop"><span>合并距离</span><input type="range" id="shMerge" min="0" max="24" value="${U.merge}"><span id="shMergeV">${U.merge}</span></div>`:''}
+  <div class="row">${['key','split'].includes(U.mode)?`<label class="chk"><input type="checkbox" id="shStick" ${U.stick?'checked':''}>加白边变贴纸</label>`:''}
+   ${U.mode==='crop'?`<label class="chk"><input type="checkbox" id="shKey" ${U.cropKey?'checked':''}>顺便去掉背景</label>`:''}
+   ${U.mode==='split'?'<button class="tag" id="shAll">全选</button><button class="tag" id="shNone">全不选</button>':''}</div>
+  <div class="row" style="margin-top:6px">名字<input id="shName" class="txt" style="width:130px" value="${esc(it.name)}">标签<input id="shTags" class="txt" style="width:140px" placeholder="空格分开(可选)" value="${esc(U.tags||'')}">
+   放进<select id="shCat" class="sel">${allCats().map(x=>`<option value="${x.id}" ${x.id===U.cat?'selected':''}>${x.name}</option>`).join('')}</select></div></div>
+ <div class="row" style="margin-top:10px;justify-content:flex-end"><span class="mini" id="shCount" style="margin-right:auto"></span>
+  ${n>1?`<button class="tag" id="upSkip">跳过这张</button>${n-U.i>1?`<button class="tag" id="upRest">剩下 ${n-U.i} 张都整张保存</button>`:''}`:'<button class="tag" id="upSkip">取消</button>'}
+  <button class="tag red" id="upOk">${n-U.i>1?'保存,下一张':'保存'}</button></div>`;
+ openModal(true);
+ const c=it.c,cvs=$('#shCv'),maxW=Math.min(760,innerWidth*.86)-40,maxH=innerHeight*.46,sc=Math.min(maxW/c.width,maxH/c.height,1);
+ cvs.width=c.width;cvs.height=c.height;cvs.style.width=c.width*sc+'px';cvs.style.height=c.height*sc+'px';SH.sc=sc;
+ $('#shWrap').style.width=c.width*sc+'px';$('#shWrap').style.height=c.height*sc+'px';$('#shWrap').style.cursor=['split','crop'].includes(U.mode)?'crosshair':'default';
+ $$('.seg button').forEach(b=>b.onclick=()=>{remember();U.mode=b.dataset.m;showUpload()});
+ const re=()=>{clearTimeout(SH.t);SH.t=setTimeout(upPreview,120)};
+ if($('#shTol'))$('#shTol').oninput=e=>{SH.tol=U.tol=+e.target.value;$('#shTolV').textContent=SH.tol;re()};
+ if($('#shMerge'))$('#shMerge').oninput=e=>{SH.merge=U.merge=+e.target.value;$('#shMergeV').textContent=SH.merge;re()};
+ if($('#shStick'))$('#shStick').onchange=e=>SH.stick=U.stick=e.target.checked;
+ if($('#shKey'))$('#shKey').onchange=e=>SH.key=U.cropKey=e.target.checked;
+ if($('#shAll')){$('#shAll').onclick=()=>{SH.boxes.forEach(b=>b.on=true);drawBoxes()};$('#shNone').onclick=()=>{SH.boxes.forEach(b=>b.on=false);drawBoxes()}}
+ if(['split','crop'].includes(U.mode)){const wrap=$('#shWrap');wrap.onpointerdown=e=>{if(e.target.classList.contains('shb'))return;const r=wrap.getBoundingClientRect(),x0=(e.clientX-r.left)/sc,y0=(e.clientY-r.top)/sc;
+  const b={x:x0,y:y0,w:1,h:1,on:true,manual:true};if(SH.mode==='crop')SH.boxes=[b];else SH.boxes.push(b);
+  const mv=ev=>{const x1=Math.max(0,Math.min(c.width,(ev.clientX-r.left)/sc)),y1=Math.max(0,Math.min(c.height,(ev.clientY-r.top)/sc));b.x=Math.min(x0,x1);b.y=Math.min(y0,y1);b.w=Math.abs(x1-x0);b.h=Math.abs(y1-y0);drawBoxes()};
+  const up=()=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',up);if(b.w<6||b.h<6)SH.boxes.splice(SH.boxes.indexOf(b),1);drawBoxes()};
+  addEventListener('pointermove',mv);addEventListener('pointerup',up);e.preventDefault()}}
+ $('#upSkip').onclick=()=>{remember();nextUpload()};
+ if($('#upRest'))$('#upRest').onclick=async()=>{remember();for(let j=U.i;j<U.list.length;j++){await saveWhole(U.list[j],j===U.i?$('#shName').value.trim():U.list[j].name);U.saved++}U.i=U.list.length;nextUpload()};
+ $('#upOk').onclick=async()=>{const ok=await upSave();if(ok){remember();nextUpload()}};
+ upPreview()}
+function remember(){const t=$('#shTags');if(t)UQ.tags=t.value;const c=$('#shCat');if(c)UQ.cat=c.value}
+function checker(x,W,H){x.fillStyle='#e9e0cf';x.fillRect(0,0,W,H);const s=Math.max(12,Math.round(Math.max(W,H)/60));for(let y=0;y<H;y+=s)for(let X=((y/s)%2)*s;X<W;X+=2*s){x.fillStyle='#f6f0e3';x.fillRect(X,y,s,s)}}
+function upPreview(){const U=UQ,c=SH.src,x=$('#shCv').getContext('2d');
+ if(U.mode==='split')return detect();
+ x.clearRect(0,0,c.width,c.height);checker(x,c.width,c.height);
+ if(U.mode==='key'){SH.masked=sheetMask();x.drawImage(SH.masked,0,0);$('#shCount').textContent='没去干净就调大容差,去多了就调小'}
+ else{x.drawImage(c,0,0);drawBoxes();if(U.mode==='whole')$('#shCount').textContent=`${c.width}×${c.height}`}}
+async function saveWhole(it,name){const tags=($('#shTags')?.value||UQ.tags||'').split(/[\s,，]+/).filter(Boolean);
+ await addAsset(it.c.toDataURL(it.jpg?'image/jpeg':'image/png',.9),{name:name||it.name,source:'upload',cat:UQ.cat,tags})}
+async function upSave(){const U=UQ,it=U.list[U.i],name=$('#shName').value.trim()||it.name,tags=$('#shTags').value.split(/[\s,，]+/).filter(Boolean);U.cat=$('#shCat').value;
+ const put=async(c,nm)=>{await addAsset(c.toDataURL('image/png'),{name:nm,source:'upload',cat:U.cat,tags});U.saved++};
+ if(U.mode==='whole'){await saveWhole(it,name);U.saved++;return true}
+ if(U.mode==='key'){let c=trim(SH.masked||sheetMask(),2);if(SH.stick)c=sticker(c);await put(c,name);return true}
+ if(U.mode==='crop'){const b=SH.boxes[0];if(!b){toast('先在图上拖一个框');return false}let c=cropOf(SH.src,b);if(SH.key)c=trim(keyOut(c,U.tol));await put(c,name);return true}
+ const on=SH.boxes.filter(b=>b.on);if(!on.length){toast('一个都没选');return false}let k=0;
+ for(const b of on){k++;let c=cropOf(SH.masked,b);
+  if(!b.manual){const x=c.getContext('2d'),id=x.getImageData(0,0,c.width,c.height),d=id.data;
+   for(let y=0;y<c.height;y++)for(let X=0;X<c.width;X++){const gx=((b.x+X)/SH.cell)|0,gy=((b.y+y)/SH.cell)|0;if(SH.lab[gy*SH.gw+gx]!==b.L)d[(y*c.width+X)*4+3]=0}x.putImageData(id,0,0)}
+  c=trim(c,2);if(SH.stick)c=sticker(c);await put(c,`${name}-${String(k).padStart(2,'0')}`)}
+ return true}
+function nextUpload(){const U=UQ;U.i++;if(U.i<U.list.length)return showUpload();
+ closeModal();save();if(U.saved){setTab(U.cat);toast(`放进了 ${U.saved} 个素材到「${catName(U.cat)}」`)}}
 
 /* ---------- 分类收纳 ---------- */
 const BASECATS=[['tape','胶带'],['scrap','纸片'],['doodle','小涂鸦'],['upload','我的上传'],['tool','工具生成']];
@@ -865,7 +992,7 @@ const closeModal=()=>$('#modal').classList.remove('show');
 let SH=null; // 当前素材页状态
 async function openSheet(src,name,mode='split',item=null){
  const im=await loadImg(src),k=Math.min(1,2400/Math.max(im.naturalWidth,im.naturalHeight)),c=cv(im.naturalWidth*k,im.naturalHeight*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);
- SH={src:c,name,mode,item,boxes:[],tol:30,merge:6,key:mode!=='crop',stick:false,cat:tab&&!['all','fav'].includes(tab)?tab:'upload'};
+ SH={src:c,name,mode,item,boxes:[],tol:30,merge:6,key:mode!=='crop',stick:false,cat:'upload'};
  const catOpts=allCats().map(x=>`<option value="${x.id}" ${x.id===SH.cat?'selected':''}>${x.name}</option>`).join('');
  $('#mbox').innerHTML=`<h3>${mode==='crop'?'剪裁':'拆成小素材'}</h3>
  <div class="mini">${mode==='crop'?'在图上拖一个框,框住要留下的部分。':'自动找出图上的每一个小素材。点框可以取消或选回;在空白处拖一下可以自己补一个框。'}</div>
@@ -946,9 +1073,6 @@ async function sheetApply(){
   await addAsset(c.toDataURL('image/png'),{name:`${base}-${String(k).padStart(2,'0')}`,source:'upload',cat,tags:[base]})}
  closeModal();setTab(cat);save();toast(`拆出了 ${k} 个,放进了「${catName(cat)}」`)}
 function cropOf(c,b){const o=cv(b.w,b.h);o.getContext('2d').drawImage(c,-b.x,-b.y);return o}
-function pickSheet(){const f=document.createElement('input');f.type='file';f.accept='image/*';f.onchange=async()=>{const file=f.files[0];if(!file)return;
- const url=URL.createObjectURL(file);try{await openSheet(url,file.name.replace(/\.[^.]+$/,''))}catch(e){toast('这张图打不开')}};f.click()}
-
 /* ---------- 自带素材(代码现画) ---------- */
 function zigTape(base,deco,alpha=.84){const W=640,Hh=128,R=rng(base.length*31+deco.length);const c=cv(W,Hh),x=c.getContext('2d');
  const p=new Path2D();[...jag(R,W-8,0,W-8,Hh,4,10),...jag(R,8,Hh,8,0,4,10)].forEach(([a,b],i)=>i?p.lineTo(a,b):p.moveTo(a,b));p.closePath();
@@ -1138,6 +1262,16 @@ function initTop(){
  document.addEventListener('click',e=>{if(!e.target.closest('#exportPop'))$('#exportPop').classList.remove('show')});
 }
 
+/* ---------- 侧栏宽度 ---------- */
+const PW_MIN=220,PW_MAX=520,PW_DEF=272;
+function setPW(w){w=Math.max(PW_MIN,Math.min(PW_MAX,Math.round(w)));$('#app').style.setProperty('--pw',w+'px');return w}
+function initGrip(){let w=PW_DEF;try{w=+localStorage.getItem('jw-pane-width')||PW_DEF}catch(e){}setPW(w);
+ const g=$('#grip');g.onpointerdown=e=>{e.preventDefault();g.classList.add('on');document.body.classList.add('resizing');const left=$('#pane').getBoundingClientRect().left;let raf=0;
+  const mv=ev=>{w=setPW(ev.clientX-left);if(!raf)raf=requestAnimationFrame(()=>{raf=0;layout()})};
+  const up=()=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',up);g.classList.remove('on');document.body.classList.remove('resizing');layout();try{localStorage.setItem('jw-pane-width',w)}catch(e){}};
+  addEventListener('pointermove',mv);addEventListener('pointerup',up)};
+ g.ondblclick=()=>{w=setPW(PW_DEF);layout();try{localStorage.setItem('jw-pane-width',w)}catch(e){}}}
+
 /* ---------- 启动 ---------- */
 async function init(){
  initTop();skillCards();
@@ -1146,19 +1280,20 @@ async function init(){
  $$('#pane [data-op]').forEach(b=>b.onclick=()=>runOp(b.dataset.op));
  $('#bWand').onclick=()=>{const it=sel();if(!wand&&(!it||it.type!=='image'))return toast('先在纸上点选一张图片');setWand(!wand)};
  tabsRender();
+ initGrip();document.addEventListener('pointerdown',e=>{if(!e.target.closest('#info')&&!e.target.closest('.thumb'))hideInfo(true)});$('#bBatch').onclick=()=>setBatch(!batch);
  $('#dq').oninput=e=>{dq=e.target.value.trim();drawerRender()};
  $('#dcols').innerHTML=Object.entries(COLS).map(([k,v])=>`<span data-k="${k}" title="${k}" style="background:${v}"></span>`).join('');
  $$('#dcols span').forEach(sp=>sp.onclick=()=>{dcol=dcol===sp.dataset.k?null:sp.dataset.k;$$('#dcols span').forEach(x=>x.classList.toggle('on',x.dataset.k===dcol));drawerRender()});
  $$('.ri[data-pane]').forEach(b=>b.onclick=()=>setPane(b.dataset.pane));$('#bFold').onclick=()=>{const app=$('#app');app.classList.toggle('folded');$('#bFold').innerHTML=app.classList.contains('folded')?'<i>»</i>展开':'<i>«</i>收起';setTimeout(layout,20)};
- $('#fUp').onchange=e=>{importFiles([...e.target.files],'upload');e.target.value=''};
- $('#fInbox').onchange=e=>{importFiles([...e.target.files],'tool');e.target.value=''};
- $('#bInbox').onclick=()=>$('#fInbox').click();$('#bSheet').onclick=pickSheet;
+ $('#fUp').onchange=e=>{startUpload([...e.target.files],'upload');e.target.value=''};
+ $('#fInbox').onchange=e=>{startUpload([...e.target.files],'tool');e.target.value=''};
+ $('#bInbox').onclick=()=>$('#fInbox').click();
  $$('[data-pg]').forEach(b=>b.onclick=()=>pageOp(b.dataset.pg));
  $('#fProj').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;try{const p=JSON.parse(await f.text());commit();await applyProject(p);selId=null;syncTop();layout();drawerRender();pagebar();save();toast('打开了')}catch(err){toast('这个文件打不开')}};
  let dc=0;window.addEventListener('dragenter',e=>{if(e.dataTransfer.types.includes('Files')){dc++;$('#dropHint').style.display='flex'}});
  window.addEventListener('dragleave',()=>{if(--dc<=0){dc=0;$('#dropHint').style.display='none'}});
  window.addEventListener('dragover',e=>e.preventDefault());
- window.addEventListener('drop',e=>{e.preventDefault();dc=0;$('#dropHint').style.display='none';importFiles([...e.dataTransfer.files],'upload')});
+ window.addEventListener('drop',e=>{e.preventDefault();dc=0;$('#dropHint').style.display='none';startUpload([...e.dataTransfer.files],'upload')});
  window.addEventListener('keydown',e=>{if(/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;const mod=e.metaKey||e.ctrlKey,it=sel();
   if(mod&&e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?redo():undo()}
   else if(mod&&e.key.toLowerCase()==='y'){e.preventDefault();redo()}
