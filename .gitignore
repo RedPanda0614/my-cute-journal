@@ -1,0 +1,8 @@
+.DS_Store
+# 字体原型下载的字体和临时渲染文件
+字体skill原型/fonts/
+字体skill原型/_render.html
+字体skill原型/_t2/
+# 成品和素材收件箱放大文件,不进仓库
+成品/
+素材/
