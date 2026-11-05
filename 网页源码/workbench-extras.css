@@ -72,8 +72,7 @@
 #editColor output{font-size:11px;color:var(--soft);font-variant-numeric:tabular-nums}
 .edit-actions,.edit-body .ctx-actions{display:flex;gap:5px;flex-wrap:wrap}
 .edit-body .ctx-actions>.more{flex-basis:100%;order:2}
-.edit-body details.more summary{font-size:12px;cursor:pointer;padding:5px 0}
-.edit-body details.more .menu{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding-top:5px}
+.edit-body .more .menu{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding-top:5px}
 .edit-body .cb{min-height:27px;font-size:12px;padding:3px 6px;white-space:normal}
 .edit-section>.grp{padding:2px 8px 8px;border:0}
 .edit-section .swatch{width:17px;height:17px;display:inline-block;border-radius:50%;cursor:pointer;border:1px solid #cbb899}
@@ -128,9 +127,24 @@
 .upload-origin :is(input,select){width:100%;min-width:0;height:29px}
 @media(max-width:500px){.upload-origin{grid-template-columns:95px minmax(0,1fr);gap:8px}}
 .material-origin{overflow-wrap:anywhere;margin:7px 0 5px}
-/* 更多操作只有一个受展开状态控制的箭头。 */
-#editTransform details.more>summary{display:flex;align-items:center;justify-content:space-between;gap:8px;list-style:none;padding:6px 8px}
-#editTransform details.more>summary::-webkit-details-marker{display:none}
-#editTransform details.more>summary::marker{content:''}
-#editTransform details.more>summary::after{content:'';width:6px;height:6px;flex:none;border-right:1.5px solid var(--soft);border-bottom:1.5px solid var(--soft);transform:rotate(45deg);margin:0 3px 3px 0}
-#editTransform details.more[open]>summary::after{transform:rotate(225deg);margin-top:4px;margin-bottom:0}
+/* 更多操作:普通按钮 + 面板,不用 <details>,所以 Safari 也只有一个箭头。 */
+.more .menu[hidden]{display:none!important}
+.edit-body .more-btn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 8px;text-align:left}
+.edit-body .more-btn::after{content:'';width:6px;height:6px;flex:none;border-right:1.5px solid var(--soft);border-bottom:1.5px solid var(--soft);transform:rotate(45deg);margin:0 3px 3px 0;transition:transform .15s}
+.edit-body .more.open .more-btn::after{transform:rotate(225deg);margin:4px 3px 0 0}
+/* 文字排版 */
+.tlayout{display:flex;flex-direction:column;gap:7px;padding:8px 0 4px;border-top:1px dashed var(--line);margin-top:4px;width:100%}
+.tl-row{display:grid;grid-template-columns:48px minmax(0,1fr) 42px;align-items:center;gap:6px;font-size:12px;color:var(--soft)}
+.tl-row b{font-weight:400;color:var(--ink);text-align:right}
+.tl-row input[type=range]{width:100%}
+.tl-row input[type=number]{width:100%;border:1px solid var(--line);background:#fffdf7;border-radius:3px;padding:3px 5px}
+.tl-seg{grid-column:2/4;display:flex;border:1px solid var(--line);border-radius:4px;overflow:hidden;width:max-content}
+.tl-seg button{border:none;border-right:1px solid var(--line);background:#fffdf7;padding:4px 11px;cursor:pointer;font-size:12px}
+.tl-seg button:last-child{border-right:none}
+.tl-seg button.on{background:var(--accent);color:#fff}
+.tl-seg button:disabled{opacity:.45;cursor:default}
+.tl-tip{line-height:1.5}
+/* 文本框左右调宽手柄 */
+.item .h.h-side{width:8px;height:18px;border-radius:3px;top:50%;margin-top:-9px;cursor:ew-resize;background:#fff}
+.item .h.h-e{right:-7px}.item .h.h-w{left:-7px}
+.item.box-resizing>img{object-fit:contain;object-position:left top}

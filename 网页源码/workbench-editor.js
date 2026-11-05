@@ -23,7 +23,7 @@
  const oldPanel=renderPanel;renderPanel=function(){if(selectionPageId!==curPage()?.id){selectionPageId=curPage()?.id;setBoxMode(false)}groups.forEach(id=>$('#'+id).replaceChildren());oldPanel();const it=sel(),image=it?.type==='image',photo=image&&!it.cutLetter&&!it.drawing,text=it?.type==='text'||!!it?.cutLetter;
   $('#editName').textContent=it?it.name+(it.locked?' · 已锁定':''):'';$('#needSel').style.display=it||layerPicked.size?'none':'block';$('#editTransformSection').hidden=!it;$('#editTextSection').hidden=!text;$('#editPhotoSection').hidden=!photo;$('#editColorSection').hidden=!image||!!it?.cutLetter;$('#editCropSection').hidden=!it;$('#editRestore').hidden=!image;pane.querySelectorAll('[data-edit-image]').forEach(e=>e.hidden=!image||!!it?.cutLetter);
   const ctx=$('#ctx'),move=(selector,target)=>ctx.querySelectorAll(selector).forEach(e=>$('#'+target).append(e));
-  move('#bEditText,#tf,#ts,.f:has(.swatch),.chk,#tr','editText');
+  move('#bEditText,#tf,#ts,.f:has(.swatch),#tLayout,.chk,#tr','editText');
   ctx.querySelector('[data-a=del]')?.remove();ctx.querySelectorAll('[data-op]').forEach(e=>e.remove());
   move('.f,.lbl,.ctx-actions,#wbGroupTransform','editTransform');move('#wbCutEdit,#wbCutShuffle','editText');move('#wbPhotoEdit,#wbPhotoReplace','editPhoto');ctx.replaceChildren();
   if($('#wbPhotoEdit'))$('#wbPhotoEdit').textContent='设置效果';if($('#wbPhotoReplace'))$('#wbPhotoReplace').textContent='替换照片';
@@ -49,6 +49,9 @@
   layerPicked.clear();if(m.append)for(const id of m.previous)layerPicked.add(id);if(m.moved){const left=Math.min(m.start.x,m.end.x),right=Math.max(m.start.x,m.end.x),top=Math.min(m.start.y,m.end.y),bottom=Math.max(m.start.y,m.end.y);for(const it of state.items){if(it.hidden||it.locked)continue;const a=it.rot*Math.PI/180,c=Math.cos(a),s=Math.sin(a),corners=[[-1,-1],[1,-1],[1,1],[-1,1]].map(([xx,yy])=>({x:it.x+xx*it.w/2*c-yy*it.h/2*s,y:it.y+xx*it.w/2*s+yy*it.h/2*c}));if(corners.every(p=>p.x>=left&&p.x<=right&&p.y>=top&&p.y<=bottom))layerPicked.add(it.id)}}selId=null;renderItems();if(layerPicked.size)toast('选中 '+layerPicked.size+' 项，按 Delete 删除');
  }
  page.addEventListener('pointerup',e=>finishBox(e),true);page.addEventListener('pointercancel',e=>finishBox(e,true),true);
+ page.addEventListener('lostpointercapture',e=>{if(marquee&&marquee.pointer===e.pointerId)finishBox(e)},true);
+ window.addEventListener('pointerup',e=>{if(marquee)finishBox({...e,pointerId:marquee.pointer,preventDefault(){},stopImmediatePropagation(){}})},true);
+ window.addEventListener('pointermove',e=>{if(marquee&&e.buttons===0)finishBox({pointerId:marquee.pointer,preventDefault(){},stopImmediatePropagation(){}})},true);
  // 删除键优先删除整批选中项，输入文字和弹窗操作不触发。
  window.addEventListener('keydown',e=>{if(e.target.closest('input,textarea,select,[contenteditable=true]')||$('#modal').classList.contains('show')||document.querySelector('#materialMenu:not([hidden])'))return;if(e.key==='Escape'){setBoxMode(false);layerPicked.clear();select(null)}if(['Delete','Backspace'].includes(e.key)&&layerPicked.size){e.preventDefault();e.stopImmediatePropagation();WB.deleteLayers()}},true);
  page.addEventListener('dblclick',e=>{if(boxMode){e.preventDefault();e.stopImmediatePropagation()}},true);
@@ -62,7 +65,7 @@
  const originalAddItem=addItem;addItem=function(...args){return editNewItem(originalAddItem(...args))};
  const originalAct=act;act=function(action){const result=originalAct(action);if(action==='dup')editNewItem(sel());return result};
  const originalPane=setPane;setPane=function(name){setBoxMode(false);return originalPane(name)};
- const originalGoPage=goPage;goPage=function(...args){setBoxMode(false);return originalGoPage(...args)};
+ const originalGoPage=goPage;goPage=function(...args){setBoxMode(false);layerPicked.clear();return originalGoPage(...args)};
  window.addEventListener('blur',()=>setBoxMode(false));document.addEventListener('visibilitychange',()=>{if(document.hidden)setBoxMode(false)});
  WB.colorCanvas=colorCanvas;WB.setBoxMode=setBoxMode;
  window.workbenchReady.then(()=>renderPanel());
