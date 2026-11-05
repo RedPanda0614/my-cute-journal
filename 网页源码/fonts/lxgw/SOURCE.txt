@@ -1,0 +1,3 @@
+https://github.com/lxgw/LxgwWenKai-Screen
+https://github.com/lxgw/LxgwWenKai-Screen/releases/download/v1.530/LXGWWenKaiScreen.ttf
+{"release": "v1.530", "url": "https://github.com/lxgw/LxgwWenKai-Screen/releases/download/v1.530/LXGWWenKaiScreen.ttf"}
