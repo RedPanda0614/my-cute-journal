@@ -522,8 +522,9 @@ button:disabled{opacity:.45;cursor:default}
    </div></details>
    <details class="edit-section" id="editCropSection"><summary>裁切与拆分</summary><div class="edit-body"><select class="sel" id="editCropMode" aria-label="裁切方式"><option value="crop">矩形裁切</option><option value="shape">不规则裁切</option><option value="split">素材页拆分</option></select><button class="tool" id="editCropGo">开始裁切</button><button class="tool edit-generated" id="editUncrop" hidden>取消文字裁切</button></div></details>
    <details class="edit-section" data-edit-image><summary>贴纸效果</summary><div class="edit-body">
-    <div class="stick-row"><button class="tool" data-op="sticker">白边贴纸</button><span class="sw-seg" id="stickW" role="group" aria-label="白边粗细"><button type="button" data-sw="thin">细</button><button type="button" data-sw="mid">中</button><button type="button" data-sw="thick">粗</button></span></div><button class="tool" data-op="torn">撕边</button>
-    <label class="edit-slider">撕边强度<input type="range" id="tornS" min="1" max="10" value="5"></label><button class="tool" data-op="tape">制作胶带</button>
+    <div class="fx-row"><button class="tool" data-op="sticker">白边贴纸</button><select class="sel fx-w" data-fx="sticker" aria-label="白边粗细"><option value="thin">细</option><option value="mid">中</option><option value="thick">粗</option></select></div>
+    <div class="fx-row"><button class="tool" data-op="torn">撕边</button><select class="sel fx-w" data-fx="torn" aria-label="撕边粗细"><option value="thin">细</option><option value="mid">中</option><option value="thick">粗</option></select></div>
+    <button class="tool" data-op="tape">制作胶带</button>
    </div></details>
    <details class="edit-section" id="editPhotoSection"><summary>相框与纹理</summary><div class="edit-body edit-generated" id="editPhoto"></div></details>
    <details class="edit-section" id="editColorSection"><summary>调色</summary><div class="edit-body" id="editColor"></div></details>
@@ -769,7 +770,9 @@ function clearBackground(c,tol,holes=matteHoles){
 function keyOut(c,tol){return trim(clearBackground(c,tol))}
 // 白边贴纸:细 / 中 / 粗 三档。描边按素材短边算,太小的图也有最小宽度
 const STICK_W={thin:{k:.022,min:5,label:'细'},mid:{k:.04,min:8,label:'中'},thick:{k:.065,min:13,label:'粗'}};
-let stickW=(()=>{try{return localStorage.getItem('jw-sticker-w')||'mid'}catch(e){return 'mid'}})();
+const TORN_W={thin:3,mid:6,thick:9};
+const fxW={sticker:'thin',torn:'thin'};try{fxW.sticker=localStorage.getItem('jw-sticker-w2')||'thin';fxW.torn=localStorage.getItem('jw-torn-w')||'thin'}catch(e){}
+let stickW=fxW.sticker;
 function sticker(c,w){const o0=STICK_W[w||stickW]||STICK_W.mid,base=Math.sqrt(c.width*c.height);
  const r=Math.max(o0.min,Math.round(base*o0.k)),sh=Math.max(5,base*.03),pad=Math.ceil(r+sh*2.2),W=c.width+pad*2,H=c.height+pad*2;
  const sil=cv(c.width,c.height),sx=sil.getContext('2d');sx.drawImage(c,0,0);sx.globalCompositeOperation='source-in';sx.fillStyle='#fffdf8';sx.fillRect(0,0,c.width,c.height);
@@ -781,9 +784,9 @@ function sticker(c,w){const o0=STICK_W[w||stickW]||STICK_W.mid,base=Math.sqrt(c.
  ox.save();ox.shadowColor='rgba(70,45,20,.16)';ox.shadowBlur=sh*1.6;ox.shadowOffsetY=sh*.55;ox.drawImage(ring,0,0);ox.restore();
  ox.save();ox.shadowColor='rgba(70,45,20,.22)';ox.shadowBlur=sh*.35;ox.shadowOffsetY=sh*.12;ox.drawImage(ring,0,0);ox.restore();
  ox.drawImage(c,pad,pad);return trim(o,2)}
-function paintStickW(){document.querySelectorAll('#stickW [data-sw]').forEach(b=>b.classList.toggle('on',b.dataset.sw===stickW))}
-// 选粗细:记住选择;选中的图已经是白边贴纸时,马上按新粗细重做
-async function setStickW(w){stickW=w;try{localStorage.setItem('jw-sticker-w',w)}catch(e){}paintStickW();const it=sel();if(it&&it.type==='image'&&!it.locked&&it.stickerBase&&assets[it.stickerBase]&&it.stickerW!==w)await runOp('sticker')}
+function paintFxW(){document.querySelectorAll('.fx-w').forEach(e=>e.value=fxW[e.dataset.fx])}
+// 选粗细:记住选择;选中的图已经做过这个效果时,马上按新粗细重做
+async function setFxW(fx,w){fxW[fx]=w;if(fx==='sticker')stickW=w;try{localStorage.setItem(fx==='sticker'?'jw-sticker-w2':'jw-torn-w',w)}catch(e){}paintFxW();const it=sel();if(it&&it.type==='image'&&!it.locked&&it.fx===fx&&it.fxBase&&assets[it.fxBase]&&it.fxW!==w)await runOp(fx)}
 function jag(R,x0,y0,x1,y1,amp,step){const pts=[],L=Math.hypot(x1-x0,y1-y0),n=Math.max(2,Math.round(L/step)),nx=-(y1-y0)/L,ny=(x1-x0)/L;
  for(let i=0;i<n;i++){const t=i/n,j=(R()-.5)*2*amp;pts.push([x0+(x1-x0)*t+nx*j,y0+(y1-y0)*t+ny*j])}return pts}
 function tornPath(R,W,H,inset,amp,step){const p=[...jag(R,inset,inset,W-inset,inset,amp,step),...jag(R,W-inset,inset,W-inset,H-inset,amp,step),...jag(R,W-inset,H-inset,inset,H-inset,amp,step),...jag(R,inset,H-inset,inset,inset,amp,step)];
@@ -799,7 +802,7 @@ function tapeFrom(c){const W=c.width,H=c.height,th=Math.round(Math.min(H*.32,W/4
 function tone(c,k){const f={warm:'sepia(.2) saturate(1.1) brightness(1.03)',faded:'contrast(.86) brightness(1.07) saturate(.82)',salt:'saturate(.58) brightness(1.1) contrast(.9)',retro:'sepia(.38) contrast(.94) saturate(.9) brightness(.98)'}[k];
  const o=cv(c.width,c.height),x=o.getContext('2d');x.filter=f;x.drawImage(c,0,0);
  if(x.filter==='none'||!('filter' in x))toast('这个浏览器不支持调色,换 Chrome 试试');return o}
-async function replaceAsset(it,c,suffix){const old=assets[it.asset];it.stickerBase=null;const a=await addAsset(c.toDataURL('image/png'),{name:old.name,source:'edit',hidden:true});
+async function replaceAsset(it,c,suffix){const old=assets[it.asset];it.fx=null;it.fxBase=null;it.inkBase=null;it.ink=null;const a=await addAsset(c.toDataURL('image/png'),{name:old.name,source:'edit',hidden:true});
  commit();it.w=it.w*a.w/old.w;it.h=it.h*a.h/old.h;it.asset=a.id;renderItems();if(suffix)toast(suffix)}
 async function runOp(op){const it=sel();
  if(it&&it.type==='text'&&!it.locked){
@@ -810,11 +813,10 @@ async function runOp(op){const it=sel();
  if(op==='reset'){if(it.asset===it.orig)return toast('已经是原图');const o=assets[it.orig],c=assets[it.asset];commit();it.w=it.w*o.w/c.w;it.h=it.h*o.h/c.h;it.asset=it.orig;return renderItems()}
  const c=await toCanvas(assets[it.asset]);
  if(op==='key')return replaceAsset(it,keyOut(c,+$('#tol').value),'背景已移除');
- if(op==='sticker'){// 已经是贴纸时,从贴纸前的图重新做,换粗细不会一圈圈叠上去
-  const baseId=it.stickerBase&&assets[it.stickerBase]?it.stickerBase:it.asset,bc=baseId===it.asset?c:await toCanvas(assets[baseId]);
-  await replaceAsset(it,sticker(bc),'');it.stickerBase=baseId;it.stickerW=stickW;save();return}
+ if(op==='sticker'||op==='torn'){// 已经做过同一种效果时,从做之前的图重新做,换粗细不会叠加
+  const same=it.fx===op&&it.fxBase&&assets[it.fxBase],baseId=same?it.fxBase:it.asset,bc=baseId===it.asset?c:await toCanvas(assets[baseId]);
+  await replaceAsset(it,op==='sticker'?sticker(bc,fxW.sticker):torn(bc,TORN_W[fxW.torn]),'');it.fx=op;it.fxBase=baseId;it.fxW=fxW[op];save();return}
  if(op==='shape')return openShape(it,c);
- if(op==='torn')return replaceAsset(it,torn(c,+$('#tornS').value),'');
  if(op==='tape'){const t=tapeFrom(c);const a=await addAsset(t.toDataURL('image/png'),{name:it.name+' 胶带',source:'tool',cat:'tool'});drawerRender();addItem(a,it.x,it.y+it.h/2,{w:Math.min(80,it.w)});return toast('做成了一条胶带,也存进了「工具生成」')}
  if(op.startsWith('tone:'))return replaceAsset(it,tone(c,op.slice(5)),'')
  if(op==='crop')return openSheet(assets[it.asset].src,it.name,'crop',it)
@@ -1749,7 +1751,7 @@ function initGrip(){initPGrip();
 /* ---------- 启动 ---------- */
 async function init(){
  initTop();skillCards();
- $$('#stickW [data-sw]').forEach(b=>b.onclick=()=>setStickW(b.dataset.sw));paintStickW();
+ $$('.fx-w').forEach(e=>e.onchange=()=>setFxW(e.dataset.fx,e.value));paintFxW();
  $('#bMatteHoles').onclick=()=>{matteHoles=!matteHoles;$('#bMatteHoles').classList.toggle('on',matteHoles);$('#bMatteHoles').setAttribute('aria-pressed',String(matteHoles))};
  $('#bInspector').onclick=()=>{inspectorFolded=!inspectorFolded;syncInspector()};
  new ResizeObserver(()=>{const w=$('#pane').clientWidth;if(w)$('#pane').style.setProperty('--asset-gap',Math.min(16,8+(w-220)*.025)+'px')}).observe($('#pane'));
@@ -1797,5 +1799,6 @@ window.workbenchReady=init();
 <script src="workbench-v26.js"></script>
 <script src="open-materials.js"></script>
 <script src="workbench-v27.js"></script>
+<script src="workbench-v28.js"></script>
 </body>
 </html>

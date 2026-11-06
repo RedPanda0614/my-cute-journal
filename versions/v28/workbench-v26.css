@@ -1,0 +1,119 @@
+/* v26:保存状态、作品菜单、素材栏简化、卡片、模板、对齐、参考线 */
+
+/* 顶栏保存状态 */
+.save-status{font-size:12px;white-space:nowrap;background:#f3efe4;color:var(--soft)}
+.save-status.warn{background:#f6e2c9;color:#9a5a2a}
+#projectMenu .top-dropdown .tag{display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;min-width:190px}
+#projectMenu .top-dropdown .tag small{font-size:11px;color:var(--soft);font-weight:400}
+.works-help{margin:6px 0 10px;padding:8px;border:1px dashed var(--line);border-radius:4px;background:#fbf7ee}
+.works-help .mini{margin:0 0 6px;line-height:1.6}
+
+/* 备份提醒条 */
+.backup-banner{position:fixed;left:50%;bottom:76px;transform:translateX(-50%);z-index:70;display:flex;align-items:center;gap:8px;max-width:min(760px,92vw);
+ padding:9px 12px;background:#fff7e6;border:1px solid #e9cfa2;border-radius:6px;box-shadow:0 8px 22px rgba(90,60,30,.22);font-size:13px;line-height:1.5}
+.backup-banner span{flex:1}
+
+/* 素材栏:只留分类 + 搜索,其他筛选收进「筛选」 */
+#pane.lib-simple .material-facets,#pane.lib-simple #dcols,#pane.lib-simple .material-top{display:none!important}
+#pane.lib-simple.filters-open .material-facets,#pane.lib-simple.filters-open #dcols{display:flex!important}
+#pane.lib-simple.filters-open .material-facets{flex-wrap:wrap;gap:4px;padding:4px 0}
+.filter-toggle{flex:none}
+.filter-toggle.on{background:#f6dfc8;border-color:#dbb08f}
+.cat-chips{display:flex;flex-wrap:wrap;gap:5px;padding:2px 0 6px}
+.cat-chips .chip{border:1px solid var(--line);background:#fffdf7;border-radius:14px;padding:3px 10px;font-size:12.5px;cursor:pointer;display:flex;align-items:center;gap:4px;white-space:nowrap}
+.cat-chips .chip small{font-size:10.5px;color:var(--soft)}
+.cat-chips .chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.cat-chips .chip.on small{color:#fde7dc}
+.cat-chips .chip.drop{outline:2px dashed var(--accent)}
+#bTidyNames{margin-left:auto}
+
+/* 缩略图:深一点的底,浅色素材也看得清;胶带横着放大 */
+#dgrid .thumb{background:#e7dcc6!important;box-shadow:inset 0 0 0 1px rgba(122,106,85,.18)}
+#dgrid .thumb:hover{background:#dccdb1!important}
+#dgrid .thumb img{filter:drop-shadow(0 1px 1.5px rgba(60,40,20,.28))}
+#dgrid .thumb.cat-tape img{max-width:94%!important;max-height:70%!important;width:94%;height:auto;object-fit:contain}
+
+/* 字体卡:常用 */
+.used-font{position:relative}
+.used-font::after{content:'常用';position:absolute;right:4px;top:4px;font-size:10px;line-height:1;padding:2px 4px;border-radius:3px;background:var(--accent);color:#fff}
+
+/* 整理名字 */
+.tidy-list{max-height:54vh;overflow:auto;display:flex;flex-direction:column;gap:4px;margin-top:8px}
+.tidy-row{display:grid;grid-template-columns:18px 34px minmax(0,1fr) 14px minmax(0,1fr);align-items:center;gap:6px;font-size:12.5px;padding:3px;border-radius:3px}
+.tidy-row:hover{background:#f6eedc}
+.tidy-row img{width:34px;height:34px;object-fit:contain;background:#ece2cf;border-radius:3px}
+.tidy-row .old{color:var(--soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* 手帐卡片 */
+.card-pane{margin:0 0 12px;padding-bottom:10px;border-bottom:1px dashed var(--line)}
+.card-pane h3 small{font-weight:400;font-size:12px;color:var(--soft)}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:6px}
+.card-btn{border:1px solid var(--line);background:#efe6d3;border-radius:5px;padding:6px 4px 5px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px}
+.card-btn:hover{background:#e7dcc6}
+.card-btn .cp{height:46px;display:flex;align-items:center;justify-content:center}
+.card-btn .cp img{max-width:64px;max-height:46px}
+.card-btn b{font-weight:400;font-size:12px}
+.card-edit .card-body{display:flex;flex-direction:column;gap:7px;padding:8px 10px}
+.card-edit .edit-head{padding:8px 10px 0;font-size:13px}
+.card-edit input[type=date],.card-edit input[type=number]{width:100%;border:1px solid var(--line);background:#fffdf7;border-radius:3px;padding:3px 5px;font:inherit;font-size:12px}
+.card-edit .tc-pre{grid-column:2/4;display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.card-edit input[type=color]{width:26px;height:22px;padding:0;border:1px solid var(--line);border-radius:3px;background:#fffdf7}
+#editCardSection{border:1px solid var(--line);border-radius:4px;background:var(--paper);margin-bottom:8px}
+
+/* 模板选择 */
+.tpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin:10px 0 14px}
+.tpl{border:1px solid var(--line);background:#fffdf7;border-radius:6px;padding:8px;cursor:pointer;display:flex;flex-direction:column;gap:4px;text-align:left}
+.tpl:hover{border-color:var(--accent)}
+.tpl b{font-size:14px}.tpl small{font-size:11.5px;color:var(--soft);line-height:1.45}
+.tpl-pic{display:block;height:92px;border-radius:3px;background:#f4ecdc;position:relative;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(122,106,85,.15)}
+.tpl-pic::before,.tpl-pic::after{content:'';position:absolute}
+.tpl-blank{background:#f7f0e1}
+.tpl-diary{background:repeating-linear-gradient(#f7f0e1 0 9px,rgba(110,145,170,.3) 9px 10px)}
+.tpl-diary::before{left:10%;top:10%;width:22%;height:28%;background:#c8644b;border-radius:2px;box-shadow:0 6px 0 -1px #fbf7ee inset}
+.tpl-diary::after{right:10%;top:30%;width:38%;height:44%;background:#fffdf8;box-shadow:0 1px 3px rgba(0,0,0,.25);transform:rotate(4deg)}
+.tpl-travel{background:#f7f0e1}
+.tpl-travel::before{left:10%;top:22%;width:40%;height:38%;background:#fffdf8;box-shadow:0 1px 3px rgba(0,0,0,.25);transform:rotate(-5deg)}
+.tpl-travel::after{right:10%;top:44%;width:36%;height:36%;background:#fffdf8;box-shadow:0 1px 3px rgba(0,0,0,.25);transform:rotate(6deg)}
+.tpl-month{background:linear-gradient(rgba(110,145,170,.25) 1px,transparent 1px) 0 0/100% 14px,linear-gradient(90deg,rgba(110,145,170,.25) 1px,transparent 1px) 0 0/14.28% 100%,#f8f3e7}
+.tpl-photos{background:#cfae84}
+.tpl-photos::before{left:8%;top:8%;width:38%;height:40%;background:#fffdf8;box-shadow:58px 4px 0 #fffdf8,4px 46px 0 #fffdf8,60px 50px 0 #fffdf8}
+
+/* 空白页提示 */
+.empty-hint{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:3;display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 20px;
+ background:rgba(251,247,238,.94);border:1px dashed #cdb894;border-radius:8px;box-shadow:0 6px 18px rgba(90,60,30,.15);pointer-events:auto;text-align:center}
+.empty-hint b{font-size:16px}.empty-hint span{font-size:12.5px;color:var(--soft)}
+.empty-hint[hidden]{display:none}
+.empty-hint .row{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:4px}
+#desk{position:relative}
+
+/* 对齐 */
+.align-bar{display:flex;align-items:center;gap:3px;flex-wrap:wrap;width:100%;padding:0 0 8px;margin-bottom:6px;border-bottom:1px dashed var(--line)}
+.align-bar .ab-lbl{font-size:12px;color:var(--soft);margin-right:4px;min-width:48px}
+.align-bar .ab{width:27px;height:25px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);background:#fffdf7;border-radius:3px;cursor:pointer;color:var(--ink);padding:0}
+.align-bar .ab:hover{background:#fff4dc}.align-bar .ab:disabled{opacity:.35;cursor:default}
+.align-bar svg{width:16px;height:16px}
+
+/* 智能参考线 */
+.smart-guides{position:absolute;inset:0;pointer-events:none;z-index:6}
+.smart-guides i{position:absolute;background:#e0457b}
+.smart-guides .gv{top:-20px;bottom:-20px;width:1px}
+.smart-guides .gh{left:-20px;right:-20px;height:1px}
+
+/* v28 贴纸效果:按钮 + 粗细下拉 */
+.fx-row{display:flex;gap:6px;align-items:stretch;margin-bottom:6px}
+.fx-row .tool{flex:1}
+.fx-row .fx-w{flex:none;width:64px}
+/* v27 样式预览条 */
+.style-preview-bar{display:flex;gap:6px;margin:6px 0 8px}
+.style-preview-bar .txt{flex:1;min-width:0}
+.style-preview-bar .sel{flex:1;min-width:0}
+.text-preview .font-of{display:block;font-size:10.5px;color:var(--soft);margin-top:1px}
+.text-preview.repainting .sample{opacity:.45}
+.font-picker.styled .text-preview .sample img{max-width:100%;max-height:54px;object-fit:contain}
+.os-credit{margin-top:6px;line-height:1.4}
+/* v28 线稿颜色 */
+.ink-tip{margin:0 0 6px;line-height:1.5}
+.ink-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px}
+.ink-sw{width:22px;height:22px;border-radius:50%;border:1px solid rgba(0,0,0,.15);cursor:pointer;padding:0}
+.ink-sw.on{outline:2px solid var(--accent);outline-offset:2px}
+#inkPick{width:28px;height:24px;padding:0;border:none;background:none;cursor:pointer}

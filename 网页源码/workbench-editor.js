@@ -28,7 +28,7 @@
   move('.f,.lbl,.ctx-actions,#wbGroupTransform','editTransform');move('#wbCutEdit,#wbCutShuffle','editText');move('#wbPhotoEdit,#wbPhotoReplace','editPhoto');ctx.replaceChildren();
   if($('#wbPhotoEdit'))$('#wbPhotoEdit').textContent='设置效果';if($('#wbPhotoReplace'))$('#wbPhotoReplace').textContent='替换照片';
   for(const host of ['editTransform','editText'])$('#'+host).querySelectorAll('button,input,select').forEach(b=>{b.disabled=!!it?.locked&&!['lock','dup'].includes(b.dataset.a)});
-  pane.querySelectorAll('[data-op],#bWand,#bMatteHoles,#tol,#tornS,#wbPerson').forEach(b=>b.disabled=!image||it.locked);
+  pane.querySelectorAll('[data-op],#bWand,#bMatteHoles,#tol,.fx-w,#wbPerson').forEach(b=>b.disabled=!image||it.locked);
   const crop=$('#editCropMode');[...crop.options].forEach(o=>o.disabled=o.value!=='crop'&&!image);if(!image)crop.value='crop';$('#editCropGo').textContent=crop.value==='split'?'开始拆分':'开始裁切';crop.disabled=!it||it.locked;$('#editCropGo').disabled=!it||it.locked;$('#editUncrop').hidden=!(it?.type==='text'&&it.clip);$('#editUncrop').disabled=!!it?.locked;
   if(image&&!it.cutLetter)renderColor(it);else{toneSession=null;previewTicket++;$('#editColor').replaceChildren()}
   updateSelectionUI();
@@ -60,7 +60,7 @@
  page.addEventListener('pointerdown',e=>{if(e.target.closest('.item')&&!boxMode)down={x:e.clientX,y:e.clientY,id:e.target.closest('.item').dataset.id}},true);page.addEventListener('pointerup',e=>{if(down&&Math.hypot(e.clientX-down.x,e.clientY-down.y)<4&&!$('#app').classList.contains('folded')&&!wand){if($('.ri.on')?.dataset.pane!=='tidy')setPane('tidy')}down=null},true);
  const originalLayers=renderLayers;renderLayers=function(){originalLayers();updateSelectionUI()};
  // 新增到纸面的内容统一选中并打开编辑；只导入素材库不触发。
- function editNewItem(it,{keepDrawing=false}={}){if(!it||!state.items.includes(it))return;setBoxMode(false);layerPicked.clear();if(!keepDrawing)WB.stopDrawing();hideInfo(true);if($('.ri.on')?.dataset.pane!=='tidy'||$('#app').classList.contains('folded'))setPane('tidy');selId=it.id;renderItems();$('#editTransformSection').open=true;if(it.type==='text'||it.cutLetter)$('#editTextSection').open=true;pane.scrollTop=0;return it}
+ function editNewItem(it,{keepDrawing=false}={}){if(!it||!state.items.includes(it))return;setBoxMode(false);layerPicked.clear();if(!keepDrawing)WB.stopDrawing();hideInfo(true);const stay=it.type!=='text'&&!it.cutLetter&&!keepDrawing;/* v28:放素材、卡片时留在原来的面板,点纸上的东西才去编辑;文字仍直接去编辑 */if(!stay&&($('.ri.on')?.dataset.pane!=='tidy'||$('#app').classList.contains('folded')))setPane('tidy');selId=it.id;renderItems();if(stay&&$('.ri.on')?.dataset.pane!=='tidy')return it;$('#editTransformSection').open=true;if(it.type==='text'||it.cutLetter)$('#editTextSection').open=true;pane.scrollTop=0;return it}
  WB.editNewItem=editNewItem;
  const originalAddItem=addItem;addItem=function(...args){return editNewItem(originalAddItem(...args))};
  const originalAct=act;act=function(action){const result=originalAct(action);if(action==='dup')editNewItem(sel());return result};
