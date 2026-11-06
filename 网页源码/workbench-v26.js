@@ -138,8 +138,26 @@
  const CARD_SIZE={date:[34,42],week:[42,13],weather:[30,32],mood:[30,32],strip:[78,11]};
  const PALETTE=['#c8644b','#6f8fb5','#7f9c80','#d39a2e','#d98e8a','#3b3226'];
  function rr(x,X,Y,w,h,r){x.beginPath();x.moveTo(X+r,Y);x.arcTo(X+w,Y,X+w,Y+h,r);x.arcTo(X+w,Y+h,X,Y+h,r);x.arcTo(X,Y+h,X,Y,r);x.arcTo(X,Y,X+w,Y,r);x.closePath()}
- function paperBg(x,w,h,col='#fbf7ee',r=1.6){x.save();x.shadowColor='rgba(70,45,20,.22)';x.shadowBlur=2;x.shadowOffsetY=.6;rr(x,.8,.8,w-1.6,h-1.6,r);x.fillStyle=col;x.fill();x.restore();
-  x.save();rr(x,.8,.8,w-1.6,h-1.6,r);x.clip();const R=rng(w*31+h);for(let i=0;i<w*h*.6;i++){x.fillStyle=R()<.5?'rgba(120,95,60,.05)':'rgba(255,255,255,.25)';x.fillRect(R()*w,R()*h,.35,.35)}x.restore()}
+ /* ---- 卡片做成实物纸片:有厚度、两层阴影、纸纤维、印刷墨色 (v27) ---- */
+ function mix(hex,t){const n=parseInt(hex.slice(1),16),c=[n>>16,n>>8&255,n&255].map(v=>Math.round(t<0?v*(1+t):v+(255-v)*t));return '#'+c.map(v=>v.toString(16).padStart(2,'0')).join('')}
+ function rectPath(X,Y,w,h,r=.5){const p=new Path2D();p.moveTo(X+r,Y);p.arcTo(X+w,Y,X+w,Y+h,r);p.arcTo(X+w,Y+h,X,Y+h,r);p.arcTo(X,Y+h,X,Y,r);p.arcTo(X,Y,X+w,Y,r);p.closePath();return p}
+ // 一张纸:底下一层暗边当厚度,再盖面纸;面纸上加光照渐变、纤维、边缘高光
+ function paper(x,path,box,o={}){const fill=o.fill||'#fbf7ee',edge=o.edge||mix(fill,-.2),lift=o.lift??.45,R=rng(o.seed||7);
+  x.save();x.shadowColor='rgba(60,40,20,.18)';x.shadowBlur=o.blur??2.8;x.shadowOffsetX=.3;x.shadowOffsetY=o.drop??1.4;x.fillStyle=edge;x.fill(path);x.restore();
+  x.save();x.shadowColor='rgba(55,35,18,.36)';x.shadowBlur=.45;x.shadowOffsetY=.25;x.translate(.1,lift);x.fillStyle=edge;x.fill(path);x.restore();
+  x.fillStyle=fill;x.fill(path);
+  x.save();x.clip(path);const [X,Y,w,h]=box;
+  const g=x.createLinearGradient(X,Y,X+w*.7,Y+h);g.addColorStop(0,'rgba(255,255,255,.28)');g.addColorStop(.55,'rgba(255,255,255,0)');g.addColorStop(1,'rgba(90,60,30,.07)');x.fillStyle=g;x.fillRect(X,Y,w,h);
+  if(o.fibers!==false){x.lineCap='round';for(let i=0;i<w*h*.05;i++){const fx=X+R()*w,fy=Y+R()*h,a=R()*Math.PI,l=.5+R()*1.6;x.strokeStyle=R()<.6?`rgba(110,80,45,${.05+R()*.06})`:'rgba(255,255,255,.35)';x.lineWidth=.08+R()*.08;x.beginPath();x.moveTo(fx,fy);x.quadraticCurveTo(fx+Math.cos(a)*l*.5+R()*.3,fy+Math.sin(a)*l*.5,fx+Math.cos(a)*l,fy+Math.sin(a)*l);x.stroke()}
+   for(let i=0;i<w*h*.25;i++){x.fillStyle=R()<.5?'rgba(110,80,45,.06)':'rgba(255,255,255,.3)';x.fillRect(X+R()*w,Y+R()*h,.25,.25)}}
+  x.restore();
+  x.save();x.clip(path);x.strokeStyle='rgba(255,255,255,.6)';x.lineWidth=.45;x.translate(.12,.12);x.stroke(path);x.restore()}
+ // 印刷/盖章的墨:先画在单独一层,再随机抠掉小点,像油墨没完全吃进纸里
+ function ink(x,w,h,k,draw,seed=3,amt=.5){const L=cv(Math.ceil(w*k),Math.ceil(h*k)),lx=L.getContext('2d');lx.scale(k,k);draw(lx);
+  lx.globalCompositeOperation='destination-out';const R=rng(seed);for(let i=0;i<w*h*amt*.6;i++){lx.globalAlpha=.12+R()*.3;lx.beginPath();lx.arc(R()*w,R()*h,.05+R()*.12,0,7);lx.fill()}
+  x.save();x.setTransform(1,0,0,1,0,0);x.globalAlpha=.94;x.drawImage(L,0,0);x.restore()}
+ function hole(x,cx,cy,r){x.save();x.globalCompositeOperation='destination-out';x.beginPath();x.arc(cx,cy,r,0,7);x.fill();x.restore();
+  x.save();x.beginPath();x.arc(cx,cy,r,0,7);x.strokeStyle='rgba(60,40,20,.35)';x.lineWidth=.25;x.stroke();x.restore()}
  function icon(x,kind,cx,cy,s,col){x.save();x.lineCap='round';x.lineJoin='round';x.lineWidth=s*.09;x.strokeStyle=col;x.fillStyle=col;
   const cloud=(dx,dy,k,fill)=>{x.beginPath();x.arc(cx+dx-s*.22*k,cy+dy+s*.05*k,s*.2*k,Math.PI*.5,Math.PI*1.5);x.arc(cx+dx,cy+dy-s*.12*k,s*.27*k,Math.PI,Math.PI*2);x.arc(cx+dx+s*.24*k,cy+dy+s*.05*k,s*.2*k,Math.PI*1.5,Math.PI*.5);x.closePath();if(fill){x.fillStyle=fill;x.fill()}x.stroke()};
   if(kind==='sunny'){x.beginPath();x.arc(cx,cy,s*.22,0,7);x.fillStyle='#e8b64a';x.fill();x.strokeStyle='#e8a43a';for(let i=0;i<8;i++){const a=i*Math.PI/4;x.beginPath();x.moveTo(cx+Math.cos(a)*s*.32,cy+Math.sin(a)*s*.32);x.lineTo(cx+Math.cos(a)*s*.44,cy+Math.sin(a)*s*.44);x.stroke()}}
@@ -156,25 +174,44 @@
  async function cardCanvas(spec){const [w,h]=CARD_SIZE[spec.type],k=TPX*2,c=cv(w*k,h*k),x=c.getContext('2d');x.scale(k,k);const d=parseDay(spec.date),col=spec.color||PALETTE[0];
   const CN='"LXGW WenKai Screen",serif',EN='"Special Elite","LXGW WenKai Screen",serif',NUM='"Bebas Neue","Special Elite",serif';
   await Promise.all([fontReady('LXGW WenKai Screen',WEEK_CN.join('')+Object.values(WEATHER).join('')+Object.values(MOOD).join('')+'年月日°'),fontReady('Special Elite','0123456789'+MON_EN.join('')+WEEK_EN.join('')),fontReady('Bebas Neue','0123456789')]);
-  x.textAlign='center';x.textBaseline='middle';
-  if(spec.type==='date'){paperBg(x,w,h);x.save();rr(x,.8,.8,w-1.6,h-1.6,1.6);x.clip();x.fillStyle=col;x.fillRect(0,0,w,11);x.restore();
-   x.fillStyle='#fffaf0';x.font=`4.2px ${EN}`;x.fillText(`${MON_EN[d.getMonth()]}  ${d.getFullYear()}`,w/2,6);
-   x.fillStyle='#fbf7ee';for(const hx of [7,w-7]){x.beginPath();x.arc(hx,2.6,1,0,7);x.fill()}
-   x.fillStyle='#3b3226';x.font=`19px ${NUM}`;x.fillText(String(d.getDate()),w/2,24.5);
-   x.font=`4.6px ${CN}`;x.fillStyle=col;x.fillText(WEEK_CN[d.getDay()],w/2,36.5)}
-  if(spec.type==='week'){paperBg(x,w,h,'#fbf6ea',6);x.fillStyle=col;x.beginPath();x.arc(7,h/2,2.2,0,7);x.fill();x.fillStyle='#3b3226';x.textAlign='left';x.font=`5.2px ${CN}`;x.fillText(WEEK_CN[d.getDay()],12,h/2+.2);x.font=`3.8px ${EN}`;x.fillStyle=col;x.fillText(WEEK_EN[d.getDay()],w-14,h/2+.3)}
-  if(spec.type==='weather'){paperBg(x,w,h);icon(x,spec.weather||'sunny',w/2,13,17,col);x.fillStyle='#3b3226';x.font=`4.6px ${CN}`;x.fillText(WEATHER[spec.weather||'sunny']+(spec.temp?`  ${spec.temp}°`:''),w/2,h-6)}
-  if(spec.type==='mood'){paperBg(x,w,h);icon(x,spec.mood||'happy',w/2,13.5,20,col);x.fillStyle='#3b3226';x.font=`4.6px ${CN}`;x.fillText(MOOD[spec.mood||'happy'],w/2,h-5.5)}
-  if(spec.type==='strip'){x.save();x.globalAlpha=.92;x.fillStyle='#e8dcc4';const R=rng(7);x.beginPath();x.moveTo(1,0);for(let i=0;i<=8;i++)x.lineTo(i%2?2.2:1,i*h/8);x.lineTo(w-1,h);for(let i=8;i>=0;i--)x.lineTo(i%2?w-2.2:w-1,i*h/8);x.closePath();x.fill();x.restore();
-   x.fillStyle='#3b3226';x.font=`4.4px ${EN}`;x.textAlign='left';x.fillText(`${d.getFullYear()}.${pad2(d.getMonth()+1)}.${pad2(d.getDate())}`,6,h/2+.3);x.font=`4.6px ${CN}`;x.fillText(WEEK_CN[d.getDay()],33,h/2+.2);
-   x.fillStyle=col;x.fillText(WEATHER[spec.weather||'sunny']+(spec.temp?` ${spec.temp}°`:''),53,h/2+.2)}
+  x.textAlign='center';x.textBaseline='middle';const INK='#2f2720',sd=(spec.date||'').replace(/\D/g,'')%997+1;
+  if(spec.type==='date'){// 撕页台历:底下垫两张,上面是今天这页,顶上是装订的硬纸条和两个金属环
+   for(const [dy,f] of [[2.2,'#ece3d0'],[1.1,'#f3ecdc']])paper(x,rectPath(2.4,3+dy,29.2,34.2,.4),[2.4,3+dy,29.2,34.2],{fill:f,fibers:false,drop:.6,blur:1.4,lift:.3});
+   paper(x,rectPath(2,3,30,34.4,.4),[2,3,30,34.4],{fill:'#fcf8ef',seed:sd});
+   x.save();x.strokeStyle='rgba(120,95,60,.35)';x.lineWidth=.22;x.setLineDash([.5,.55]);x.beginPath();x.moveTo(2.6,11.9);x.lineTo(31.4,11.9);x.stroke();x.restore();
+   paper(x,rectPath(1.2,1,31.6,10,.7),[1.2,1,31.6,10],{fill:col,edge:mix(col,-.35),lift:.6,drop:.8,blur:1.4,seed:sd+1});
+   for(const hx of [9,25]){x.save();x.beginPath();x.arc(hx,3.4,1.15,0,7);x.fillStyle='rgba(30,20,10,.55)';x.fill();const g=x.createLinearGradient(hx-1.4,1,hx+1.4,4);g.addColorStop(0,'#f2efe8');g.addColorStop(.5,'#a9a49a');g.addColorStop(1,'#e2ded5');x.strokeStyle=g;x.lineWidth=.55;x.beginPath();x.arc(hx,2.5,1.3,Math.PI*.95,Math.PI*2.05);x.stroke();x.restore()}
+   x.fillStyle='rgba(255,250,240,.95)';x.font=`3.9px ${EN}`;x.fillText(`${MON_EN[d.getMonth()]}  ${d.getFullYear()}`,17,7.6);
+   ink(x,w,h,k,lx=>{lx.textAlign='center';lx.textBaseline='middle';lx.fillStyle=INK;lx.font=`18px ${NUM}`;lx.fillText(String(d.getDate()),17,23.4);lx.font=`4.4px ${CN}`;lx.fillStyle=col;lx.fillText(WEEK_CN[d.getDay()],17,33.6)},sd,.45)}
+  if(spec.type==='week'){// 布纹标签:一圈缝线,左边一颗小圆贴
+   const P=rectPath(1.5,1.4,39,8.6,1);paper(x,P,[1.5,1.4,39,8.6],{fill:'#fbf5e7',seed:sd,drop:1,blur:2});
+   x.save();x.strokeStyle=mix(col,.15);x.lineWidth=.3;x.setLineDash([.9,.7]);x.stroke(rectPath(2.7,2.6,36.6,6.2,.6));x.restore();
+   paper(x,(()=>{const p=new Path2D();p.arc(7,5.7,2.2,0,7);return p})(),[4.8,3.5,4.4,4.4],{fill:col,edge:mix(col,-.3),lift:.25,drop:.5,blur:.9,fibers:false});
+   ink(x,w,h,k,lx=>{lx.textBaseline='middle';lx.textAlign='left';lx.fillStyle=INK;lx.font=`5px ${CN}`;lx.fillText(WEEK_CN[d.getDay()],11.4,5.9);lx.textAlign='right';lx.font=`3.6px ${EN}`;lx.fillStyle=col;lx.fillText(WEEK_EN[d.getDay()],37.6,6)},sd,.35)}
+  if(spec.type==='weather'){// 牛皮纸吊牌:上面两个角剪掉,中间一个加固圈和穿孔
+   const P=new Path2D();P.moveTo(2,7);P.lineTo(6.5,2.2);P.lineTo(23.5,2.2);P.lineTo(28,7);P.lineTo(28,29.4);P.lineTo(2,29.4);P.closePath();
+   paper(x,P,[2,2.2,26,27.2],{fill:'#d9bd93',edge:'#b39469',seed:sd});
+   const ringP=new Path2D();ringP.arc(15,6.4,2.3,0,7);paper(x,ringP,[12.7,4.1,4.6,4.6],{fill:'#f1e6d1',edge:'#cdbb9c',lift:.2,drop:.3,blur:.6,fibers:false});
+   ink(x,w,h,k,lx=>{icon(lx,spec.weather||'sunny',15,16.3,14,col);lx.textAlign='center';lx.textBaseline='middle';lx.fillStyle='#3a2c1e';lx.font=`4.4px ${CN}`;lx.fillText(WEATHER[spec.weather||'sunny']+(spec.temp?`  ${spec.temp}°`:''),15,25.6)},sd,.5);
+   hole(x,15,6.4,1)}
+  if(spec.type==='mood'){// 两层花边圆纸:底下一层彩纸,上面一层米白
+   const sc=(cx,cy,r,n)=>{const p=new Path2D();for(let i=0;i<n;i++){const a0=i/n*Math.PI*2,a1=(i+1)/n*Math.PI*2,am=(a0+a1)/2,bx=cx+Math.cos(am)*r,by=cy+Math.sin(am)*r;if(!i)p.moveTo(cx+Math.cos(a0)*r*.95,cy+Math.sin(a0)*r*.95);p.arc(bx,by,r*Math.sin(Math.PI/n)*1.05,am-Math.PI/2-.35,am+Math.PI/2+.35)}p.closePath();return p};
+   paper(x,sc(15,15.2,13,18),[2,2.2,26,26],{fill:mix(col,.45),edge:mix(col,-.15),seed:sd});
+   const top=new Path2D();top.arc(14.8,14.9,10.6,0,7);paper(x,top,[4.2,4.3,21.2,21.2],{fill:'#fcf8ef',lift:.35,drop:.7,blur:1.2,seed:sd+2});
+   ink(x,w,h,k,lx=>{icon(lx,spec.mood||'happy',14.8,12.6,13,col);lx.textAlign='center';lx.textBaseline='middle';lx.fillStyle=INK;lx.font=`3.9px ${CN}`;lx.fillText(MOOD[spec.mood||'happy'],14.8,20.7)},sd,.4)}
+  if(spec.type==='strip'){// 两头撕开的纸条,撕口露出白色纸芯
+   const R=rng(sd),edgeL=[],edgeR=[];for(let i=0;i<=10;i++){edgeL.push([1.6+R()*1.4,1.4+i*7.6/10]);edgeR.push([76.2-R()*1.4,1.4+i*7.6/10])}
+   const mk=g=>{const p=new Path2D();p.moveTo(edgeL[0][0]-g,1.4-g*.3);for(const [a,b] of edgeR.slice().reverse().reverse())p.lineTo(a+g,b);for(const [a,b] of edgeL.slice().reverse())p.lineTo(a-g,b);p.closePath();return p};
+   paper(x,mk(.35),[1,1,76,8.6],{fill:'#fffaf0',edge:'#d9ccb2',fibers:false,drop:1,blur:1.8});
+   x.fillStyle='#efe2c8';x.fill(mk(-.25));x.save();x.clip(mk(-.25));const R2=rng(sd+3);for(let i=0;i<260;i++){x.fillStyle=R2()<.5?'rgba(110,80,45,.07)':'rgba(255,255,255,.3)';x.fillRect(1+R2()*76,1+R2()*9,.25,.25)}x.restore();
+   ink(x,w,h,k,lx=>{lx.textBaseline='middle';lx.textAlign='left';lx.fillStyle=INK;lx.font=`4.3px ${EN}`;lx.fillText(`${d.getFullYear()}.${pad2(d.getMonth()+1)}.${pad2(d.getDate())}`,6,5.5);lx.font=`4.4px ${CN}`;lx.fillText(WEEK_CN[d.getDay()],33,5.4);lx.fillStyle=col;lx.fillText(WEATHER[spec.weather||'sunny']+(spec.temp?` ${spec.temp}°`:''),53,5.4)},sd,.35)}
   return c}
  async function cardAsset(spec){const c=await cardCanvas(spec);return addAsset(c.toDataURL('image/png'),{name:cardName(spec),source:'tool',hidden:true})}
  const cardName=s=>({date:'日期卡',week:'星期卡',weather:'天气卡',mood:'心情卡',strip:'日期条'})[s.type];
  async function addCard(type,at={}){const spec={type,date:today(),weather:'sunny',mood:'happy',temp:'',color:PALETTE[0],...at.spec};const a=await cardAsset(spec),[w,h]=CARD_SIZE[type];
   const it=oldAddItem(a,at.x??null,at.y??null,{w:at.w||w,h:(at.w||w)*h/w,name:cardName(spec),card:spec,rot:at.rot??(state.paper.tilt?+(Math.random()*6-3).toFixed(1):0)});if(!at.silent)WB.editNewItem?.(it);return it}
  async function rebuildCard(it){const a=await cardAsset(it.card),k=it.w/(assets[it.asset]?.w||a.w);commit();it.asset=a.id;it.orig=a.id;it.w=a.w*k;it.h=a.h*k;it.name=cardName(it.card);renderItems();save()}
- WB.addCard=addCard;
+ WB.addCard=addCard;WB.cardCanvas=cardCanvas;
  // 文字面板:加一组「手帐卡片」
  (function cardPanel(){const pane=$('.pn[data-pane="text"]');if(!pane)return;const box=el('div','card-pane');
   box.innerHTML='<h3>手帐卡片 <small>自动填今天</small></h3><div class="card-grid"></div>';const grid=box.querySelector('.card-grid');

@@ -98,3 +98,19 @@
 .smart-guides i{position:absolute;background:#e0457b}
 .smart-guides .gv{top:-20px;bottom:-20px;width:1px}
 .smart-guides .gh{left:-20px;right:-20px;height:1px}
+
+/* v27 白边粗细 */
+.stick-row{display:flex;gap:6px;align-items:center}
+.stick-row .tool{flex:1}
+.sw-seg{display:inline-flex;border:1px solid var(--line);border-radius:5px;overflow:hidden;flex:none}
+.sw-seg button{border:none;background:#fffdf7;padding:5px 9px;cursor:pointer;border-right:1px solid var(--line);font:inherit;font-size:12px;color:var(--ink)}
+.sw-seg button:last-child{border-right:none}
+.sw-seg button.on{background:var(--accent);color:#fff}
+/* v27 样式预览条 */
+.style-preview-bar{display:flex;gap:6px;margin:6px 0 8px}
+.style-preview-bar .txt{flex:1;min-width:0}
+.style-preview-bar .sel{flex:1;min-width:0}
+.text-preview .font-of{display:block;font-size:10.5px;color:var(--soft);margin-top:1px}
+.text-preview.repainting .sample{opacity:.45}
+.font-picker.styled .text-preview .sample img{max-width:100%;max-height:54px;object-fit:contain}
+.os-credit{margin-top:6px;line-height:1.4}
