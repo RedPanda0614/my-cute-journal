@@ -44,6 +44,18 @@ def prune_backups() -> None:
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
+    # 网页文件每次都向本地服务确认一下是不是最新,改了代码刷新就能看到
+    def send_header(self, keyword, value):
+        if keyword.lower() == "cache-control":
+            self._cache_set = True
+        super().send_header(keyword, value)
+
+    def end_headers(self):
+        if not getattr(self, "_cache_set", False):
+            super().send_header("Cache-Control", "no-cache")
+        self._cache_set = False
+        super().end_headers()
+
     def log_message(self, fmt, *args):  # 安静一点,只打印保存信息
         if "/api/" in (self.path or ""):
             return

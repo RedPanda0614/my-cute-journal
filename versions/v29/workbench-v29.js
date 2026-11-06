@@ -23,6 +23,8 @@
   try{const a=await addAsset(m.thumb,{id:m.id,name:m.name,source:'built-in',cat:CAT(m.set),tags:[s.name,'开源',...(m.tags||[])],style:m.style||null});a.w=m.w;a.h=m.h;a.openSet=m.set;a.full=false}catch(e){}}})());
  // 打开作品前登记,打开后把作品里用到的套载入
  if(typeof applyProject==='function'){const old=applyProject;applyProject=async function(){await register();const r=await old.apply(this,arguments);
+  // 存档里记着旧分类的(v27 时放在「贴纸」「手绘」里),改回它自己的素材套
+  for(const a of Object.values(assets))if(a.openSet)a.cat=CAT(a.openSet);
   // 以前版本里的简笔画素材已经去掉了:纸上用到的先拿掉,免得显示空白
   let gone=0;for(const p of state.pages){const keep=p.items.filter(i=>!(String(i.asset).startsWith('os-dd-')&&!assets[i.asset]));gone+=p.items.length-keep.length;p.items.splice(0,p.items.length,...keep)}if(gone){toast(`去掉了 ${gone} 个已下架的简笔画素材`);renderItems?.()}
   const used=state.pages.flatMap(p=>p.items.flatMap(i=>[i.asset,i.orig]));if(await ensureAssets(used))renderItems();return r}}
