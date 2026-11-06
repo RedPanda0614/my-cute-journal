@@ -39,7 +39,7 @@
     第一行「标签」:自带分类 + 自己建的标签 + 「＋ 新建」
     第二行「素材套」:自带的套 + 自己建的套 + 「＋ 新建」 */
  const addChip=(label,onClick)=>{const b=el('button','chip chip-add','＋ '+label);b.type='button';b.onclick=onClick;return b};
- const tagTitle=el('div','row-title','标签');
+ const tagTitle=el('div','row-title','标签'),setTitle=el('div','row-title grp-sep','素材套');
  function paint(){const catRow=$('#catChips'),setRow=$('#setChips');if(!catRow)return;const cur=ML.filters?.collection||'';
   if(catRow.previousElementSibling!==tagTitle)catRow.before(tagTitle);
   catRow.querySelectorAll('.my-tag,.chip-add').forEach(e=>e.remove());
@@ -47,6 +47,7 @@
    b.onclick=()=>{activeTag=activeTag===t?'':t;drawerRender()};b.ondblclick=e=>{e.preventDefault();editTag(t)};catRow.append(b)}
   catRow.append(addChip('新建',newTag));
   if(!setRow)return;
+  if(setRow.previousElementSibling!==setTitle)setRow.before(setTitle);
   setRow.querySelectorAll('.mine,.chip-add').forEach(e=>e.remove());
   for(const c of mine()){const n=vis().filter(a=>a.collectionIds?.includes(c.id)).length,b=el('button','chip mine'+(cur===c.id?' on':''),`${esc(c.name)}<small>${n}</small>`);b.type='button';
    b.dataset.libraryCollection=c.id;b.title='把素材拖到这里放进这套 · 双击改名或删除';b.onclick=()=>setTab(c.id);b.ondblclick=e=>{e.preventDefault();editSet(c)};setRow.append(b)}
