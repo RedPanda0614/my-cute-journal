@@ -16,8 +16,8 @@
  const letters=document.createElement('div');letters.dataset.textBody='cutout';letters.hidden=true;letters.innerHTML='<div class="text-previews" id="wbCutFonts"></div><button class="tool" id="wbShuffle">打乱选中剪报字</button>';
  $('.pn[data-pane="text"]').append(letters);const cutTab=document.createElement('button');cutTab.className='cb';cutTab.dataset.textTab='cutout';cutTab.textContent='剪报字体';$('.text-library-tabs').append(cutTab);
  $$('[data-text-tab]').forEach(b=>b.onclick=()=>{$$('[data-text-tab]').forEach(x=>x.classList.toggle('on',x===b));$$('[data-text-body]').forEach(x=>x.hidden=x.dataset.textBody!==b.dataset.textTab)});
- const drawing=document.createElement('div');drawing.className='grp';drawing.innerHTML='<h3>涂鸦</h3><div class="wb-controls"><label>颜色<input id="wbInkColor" type="color" value="#b85e4c"></label><label>笔宽<input id="wbInkWidth" type="range" min="0.3" max="5" step="0.1" value="0.7"></label><div class="row"><button class="cb" id="wbPen">细笔</button><button class="cb" id="wbMarker">荧光笔</button><button class="cb" id="wbDrawStop">完成</button></div></div>';
- $('.pn[data-pane="tidy"]').append(drawing);
+ const drawing=document.createElement('div');drawing.className='grp';drawing.innerHTML='<h3>涂鸦</h3><div class="wb-controls">'+UIKit.colorField({value:'#b85e4c',label:'颜色',id:'wbInkColor'})+'<label class="edit-slider"><span>笔宽</span><input id="wbInkWidth" type="range" min="0.3" max="5" step="0.1" value="0.7"></label><div class="btn-grid three"><button class="tool" id="wbPen">细笔</button><button class="tool" id="wbMarker">荧光笔</button><button class="tool" id="wbDrawStop">完成</button></div></div>';
+ $('.pn[data-pane="tidy"]').append(drawing);UIKit.bindColor(drawing.querySelector('.cf'),()=>{});
  panel('styles','风格','◈','<h3>风格套件</h3><div class="wb-style-grid" id="wbStyles"></div>');
  panel('works','作品','▣','<div class="row"><h3 style="margin-right:auto">作品库</h3><button class="cb" id="wbSaveWork">保存当前作品</button></div><div id="wbWorks" class="wb-work-grid"></div>');
  const hookPane=setPane;setPane=function(p){stopDrawing();hookPane(p);if(p==='works')showWorks()};

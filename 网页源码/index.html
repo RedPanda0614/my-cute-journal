@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>手帐工作台</title>
 <link rel="stylesheet" href="fonts/fonts.css">
-<script src="fonts/catalog.js?v=29"></script>
+<script src="fonts/catalog.js?v=30"></script>
 <style>
 :root{--ink:#3b3226;--soft:#7a6a55;--cream:#f8f2e4;--paper:#fbf7ee;--kraft:#d6b78d;--line:#e2d4b8;--accent:#c0583f;--sage:#7f9c80;--mat:#4f866a}
 *{box-sizing:border-box}
@@ -426,8 +426,9 @@ button:disabled{opacity:.45;cursor:default}
 #textEditorPreview.font-error{color:var(--accent);font-size:13px;padding:16px;text-align:center}
 #mbox #textEditorMain{min-height:86px}
 </style>
-<link rel="stylesheet" href="workbench-extras.css?v=29">
-<link rel="stylesheet" href="workbench-v26.css?v=29">
+<link rel="stylesheet" href="workbench-extras.css?v=30">
+<link rel="stylesheet" href="workbench-v26.css?v=30">
+<link rel="stylesheet" href="ui-rules.css?v=30">
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -522,8 +523,8 @@ button:disabled{opacity:.45;cursor:default}
    </div></details>
    <details class="edit-section" id="editCropSection"><summary>裁切与拆分</summary><div class="edit-body"><select class="sel" id="editCropMode" aria-label="裁切方式"><option value="crop">矩形裁切</option><option value="shape">不规则裁切</option><option value="split">素材页拆分</option></select><button class="tool" id="editCropGo">开始裁切</button><button class="tool edit-generated" id="editUncrop" hidden>取消文字裁切</button></div></details>
    <details class="edit-section" data-edit-image><summary>贴纸效果</summary><div class="edit-body">
-    <div class="fx-row"><button class="tool" data-op="sticker">白边贴纸</button><select class="sel fx-w" data-fx="sticker" aria-label="白边粗细"><option value="thin">细</option><option value="mid">中</option><option value="thick">粗</option></select></div>
-    <div class="fx-row"><button class="tool" data-op="torn">撕边</button><select class="sel fx-w" data-fx="torn" aria-label="撕边粗细"><option value="thin">细</option><option value="mid">中</option><option value="thick">粗</option></select></div>
+    <select class="sel fx-pick" data-fx="sticker" aria-label="白边贴纸"><option value="">白边贴纸</option><option value="thin">白边贴纸 · 细</option><option value="mid">白边贴纸 · 中</option><option value="thick">白边贴纸 · 粗</option></select>
+    <select class="sel fx-pick" data-fx="torn" aria-label="撕边"><option value="">撕边</option><option value="thin">撕边 · 细</option><option value="mid">撕边 · 中</option><option value="thick">撕边 · 粗</option></select>
     <button class="tool" data-op="tape">制作胶带</button>
    </div></details>
    <details class="edit-section" id="editPhotoSection"><summary>相框与纹理</summary><div class="edit-body edit-generated" id="editPhoto"></div></details>
@@ -784,9 +785,10 @@ function sticker(c,w){const o0=STICK_W[w||stickW]||STICK_W.mid,base=Math.sqrt(c.
  ox.save();ox.shadowColor='rgba(70,45,20,.16)';ox.shadowBlur=sh*1.6;ox.shadowOffsetY=sh*.55;ox.drawImage(ring,0,0);ox.restore();
  ox.save();ox.shadowColor='rgba(70,45,20,.22)';ox.shadowBlur=sh*.35;ox.shadowOffsetY=sh*.12;ox.drawImage(ring,0,0);ox.restore();
  ox.drawImage(c,pad,pad);return trim(o,2)}
-function paintFxW(){document.querySelectorAll('.fx-w').forEach(e=>e.value=fxW[e.dataset.fx])}
-// 选粗细:记住选择;选中的图已经做过这个效果时,马上按新粗细重做
-async function setFxW(fx,w){fxW[fx]=w;if(fx==='sticker')stickW=w;try{localStorage.setItem(fx==='sticker'?'jw-sticker-w2':'jw-torn-w',w)}catch(e){}paintFxW();const it=sel();if(it&&it.type==='image'&&!it.locked&&it.fx===fx&&it.fxBase&&assets[it.fxBase]&&it.fxW!==w)await runOp(fx)}
+// 贴纸效果下拉:显示选中图片现在用的档位;没做过就显示效果名
+function paintFxW(){const it=typeof sel==='function'?sel():null;document.querySelectorAll('.fx-pick').forEach(e=>e.value=it&&it.fx===e.dataset.fx&&it.fxW?it.fxW:'')}
+async function setFxW(fx,w){if(!w)return paintFxW();fxW[fx]=w;if(fx==='sticker')stickW=w;try{localStorage.setItem(fx==='sticker'?'jw-sticker-w2':'jw-torn-w',w)}catch(e){}
+ const it=sel();if(!it||it.type!=='image'||it.locked){paintFxW();return toast('先点选一张图片')}await runOp(fx);paintFxW()}
 function jag(R,x0,y0,x1,y1,amp,step){const pts=[],L=Math.hypot(x1-x0,y1-y0),n=Math.max(2,Math.round(L/step)),nx=-(y1-y0)/L,ny=(x1-x0)/L;
  for(let i=0;i<n;i++){const t=i/n,j=(R()-.5)*2*amp;pts.push([x0+(x1-x0)*t+nx*j,y0+(y1-y0)*t+ny*j])}return pts}
 function tornPath(R,W,H,inset,amp,step){const p=[...jag(R,inset,inset,W-inset,inset,amp,step),...jag(R,W-inset,inset,W-inset,H-inset,amp,step),...jag(R,W-inset,H-inset,inset,H-inset,amp,step),...jag(R,inset,H-inset,inset,inset,amp,step)];
@@ -1751,7 +1753,7 @@ function initGrip(){initPGrip();
 /* ---------- 启动 ---------- */
 async function init(){
  initTop();skillCards();
- $$('.fx-w').forEach(e=>e.onchange=()=>setFxW(e.dataset.fx,e.value));paintFxW();
+ $$('.fx-pick').forEach(e=>e.onchange=()=>setFxW(e.dataset.fx,e.value));paintFxW();
  $('#bMatteHoles').onclick=()=>{matteHoles=!matteHoles;$('#bMatteHoles').classList.toggle('on',matteHoles);$('#bMatteHoles').setAttribute('aria-pressed',String(matteHoles))};
  $('#bInspector').onclick=()=>{inspectorFolded=!inspectorFolded;syncInspector()};
  new ResizeObserver(()=>{const w=$('#pane').clientWidth;if(w)$('#pane').style.setProperty('--asset-gap',Math.min(16,8+(w-220)*.025)+'px')}).observe($('#pane'));
@@ -1792,14 +1794,15 @@ async function init(){
 }
 window.workbenchReady=init();
 </script>
-<script src="workbench-extras.js?v=29"></script>
-<script src="workbench-tools.js?v=29"></script>
-<script src="workbench-editor.js?v=29"></script>
-<script src="material-library.js?v=29"></script>
-<script src="workbench-v26.js?v=29"></script>
-<script src="open-materials.js?v=29"></script>
-<script src="workbench-v27.js?v=29"></script>
-<script src="workbench-v28.js?v=29"></script>
-<script src="workbench-v29.js?v=29"></script>
+<script src="ui-kit.js?v=30"></script>
+<script src="workbench-extras.js?v=30"></script>
+<script src="workbench-tools.js?v=30"></script>
+<script src="workbench-editor.js?v=30"></script>
+<script src="material-library.js?v=30"></script>
+<script src="workbench-v26.js?v=30"></script>
+<script src="open-materials.js?v=30"></script>
+<script src="workbench-v27.js?v=30"></script>
+<script src="workbench-v28.js?v=30"></script>
+<script src="workbench-v29.js?v=30"></script>
 </body>
 </html>

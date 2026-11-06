@@ -28,7 +28,7 @@
   move('.f,.lbl,.ctx-actions,#wbGroupTransform','editTransform');move('#wbCutEdit,#wbCutShuffle','editText');move('#wbPhotoEdit,#wbPhotoReplace','editPhoto');ctx.replaceChildren();
   if($('#wbPhotoEdit'))$('#wbPhotoEdit').textContent='设置效果';if($('#wbPhotoReplace'))$('#wbPhotoReplace').textContent='替换照片';
   for(const host of ['editTransform','editText'])$('#'+host).querySelectorAll('button,input,select').forEach(b=>{b.disabled=!!it?.locked&&!['lock','dup'].includes(b.dataset.a)});
-  pane.querySelectorAll('[data-op],#bWand,#bMatteHoles,#tol,.fx-w,#wbPerson').forEach(b=>b.disabled=!image||it.locked);
+  pane.querySelectorAll('[data-op],#bWand,#bMatteHoles,#tol,.fx-pick,#wbPerson').forEach(b=>b.disabled=!image||it.locked);
   const crop=$('#editCropMode');[...crop.options].forEach(o=>o.disabled=o.value!=='crop'&&!image);if(!image)crop.value='crop';$('#editCropGo').textContent=crop.value==='split'?'开始拆分':'开始裁切';crop.disabled=!it||it.locked;$('#editCropGo').disabled=!it||it.locked;$('#editUncrop').hidden=!(it?.type==='text'&&it.clip);$('#editUncrop').disabled=!!it?.locked;
   if(image&&!it.cutLetter)renderColor(it);else{toneSession=null;previewTicket++;$('#editColor').replaceChildren()}
   updateSelectionUI();

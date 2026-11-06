@@ -227,11 +227,11 @@
    <label class="tl-row"><span>日期</span><input type="date" id="cdDate" value="${s.date}"><button class="cb" id="cdToday" type="button">今天</button></label>
    ${s.type==='weather'||s.type==='strip'?`<label class="tl-row"><span>天气</span><select class="sel" id="cdWeather">${opts(WEATHER,s.weather)}</select><span></span></label><label class="tl-row"><span>温度</span><input type="number" id="cdTemp" value="${esc(s.temp)}" placeholder="不填"><b>°</b></label>`:''}
    ${s.type==='mood'?`<label class="tl-row"><span>心情</span><select class="sel" id="cdMood">${opts(MOOD,s.mood)}</select><span></span></label>`:''}
-   <div class="tl-row"><span>颜色</span><div class="tc-pre">${PALETTE.map(c=>`<span class="swatch ${c===s.color?'on':''}" data-cc="${c}" style="background:${c}"></span>`).join('')}<input type="color" id="cdColor" value="${s.color}"></div></div></div>`;
+   ${UIKit.colorField({value:s.color,label:'颜色'})}</div>`;
   const upd=patch=>{Object.assign(it.card,patch);rebuildCard(it)};
   $('#cdDate').onchange=e=>upd({date:e.target.value||today()});$('#cdToday').onclick=()=>upd({date:today()});
   $('#cdWeather')&&($('#cdWeather').onchange=e=>upd({weather:e.target.value}));$('#cdTemp')&&($('#cdTemp').onchange=e=>upd({temp:e.target.value}));$('#cdMood')&&($('#cdMood').onchange=e=>upd({mood:e.target.value}));
-  cardSec.querySelectorAll('[data-cc]').forEach(sw=>sw.onclick=()=>upd({color:sw.dataset.cc}));$('#cdColor').onchange=e=>upd({color:e.target.value})}
+  UIKit.bindColor(cardSec.querySelector('.cf'),(v,from,dragging)=>{if(!dragging)upd({color:v})})}
 
  /* ================= P1 页面模板 ================= */
  async function frameAsset(label='放照片'){const k=TPX*2,w=60,h=70,c=cv(w*k,h*k),x=c.getContext('2d');x.scale(k,k);

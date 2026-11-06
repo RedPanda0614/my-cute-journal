@@ -24,9 +24,9 @@ jobs = json.load(open('/home/claude/dl/jobs.json'))
 old = [i for i in json.load(open('/home/claude/dl/open_out/_list.json')) if i['src'] == 'vintageart']
 items_by = {s[0]: [] for s in SETS}
 for i in old:
-    items_by['vintage'].append(dict(id=i['id'], name=i['name'], src_file=os.path.join('/home/claude/dl/open_out', i['file']), orig=i['orig'], tags=[t for t in i['tags'] if t != '版画'], style='retro'))
+    items_by['vintage'].append(dict(id=i['id'], name=i['name'], src_file=os.path.join('/home/claude/dl/set_out2/vintage', i['file']), orig=i['orig'], tags=[t for t in i['tags'] if t != '版画'], style='retro'))
 for j in jobs:
-    f = f"/home/claude/dl/set_out/{j['set']}/{j['id']}.webp"
+    f = f"/home/claude/dl/set_out2/{j['set']}/{j['id']}.webp"
     if os.path.exists(f):
         items_by[j['set']].append(dict(id=j['id'], name=j['name'], src_file=f, orig=os.path.relpath(j['src'], '/home/claude/dl/sets'), tags=[], style='retro'))
 # 旧的平铺文件清掉
@@ -35,7 +35,7 @@ for f in glob.glob(os.path.join(OUT, '*.webp')):
 manifest = {'sets': [], 'items': []}
 md = ['# 开源素材 · 来源和许可', '', '一共 10 套,都可以免费用,包括商用。工作台素材栏「素材套」那一行,一套一个标签。', '',
       '- 「公有领域」:原书出版很早,版权已经过期。图片来自古登堡计划(Project Gutenberg)在 GitHub 上的镜像 GITenberg 等。',
-      '- 「CC0 1.0」:作者放弃了全部权利。', '- 处理:彩图去掉了纸色底,黑白木刻和版画换成深棕墨色、透明底;墙纸保持原样。', '']
+      '- 「CC0 1.0」:作者放弃了全部权利。', '- 处理:像用剪刀剪下来的贴纸——外轮廓里面不透明,保留原书纸色(木刻和版画是米白纸 + 深棕墨),边上留一圈细纸边;墙纸保持原样。', '']
 for sid, name, credit, lic, url in SETS:
     lst = items_by[sid]
     if not lst:
