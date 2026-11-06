@@ -1,4 +1,4 @@
-/* v27:字效 / 手帐标题的预览直接显示「选的字体 + 自己的字」;换字体时按当前样式预览;开源素材载入 */
+/* v27:字效 / 手帐标题的预览直接显示「选的字体 + 自己的字」;换字体时按当前样式预览 */
 (function(){
  const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
  const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e};
@@ -48,14 +48,5 @@
   cards.forEach(card=>{card.onmouseenter=card.onfocus=()=>showCur(card.dataset.font)});showCur(it.font);
   return r}}
 
- /* ---------- 3. 开源素材 ---------- */
- // open-materials.js 把图片打包成 window.OPEN_MATERIALS(双击打开也能用);按「自带素材」载入,不占作品存档
- const OM=window.OPEN_MATERIALS;
- // 在打开作品之前载入(作品里可能用到这些素材);已载入的跳过
- let omDone=null;
- const loadOpen=()=>omDone||(omDone=(async()=>{if(!OM?.items?.length)return;for(const m of OM.items){if(assets[m.id])continue;try{await addAsset(m.data,{id:m.id,name:m.name,source:'built-in',cat:m.cat,tags:[...m.tags,'开源'],style:m.style||null})}catch(e){}}})());
- if(typeof applyProject==='function'){const oldA=applyProject;applyProject=async function(){await loadOpen();return oldA.apply(this,arguments)}}
- window.workbenchReady?.then(()=>loadOpen().then(()=>{if(typeof drawerRender==='function')drawerRender()}));
- // 详情卡里写上来源和许可
- if(typeof showInfo==='function'){const oldInfo=showInfo;showInfo=function(a){const r=oldInfo.apply(this,arguments);if(a&&a.id?.startsWith('os-')){const m=OM?.items.find(i=>i.id===a.id);const host=$('#info');if(host&&m){const row=el('div','mini os-credit');row.textContent=`来源:${m.credit} · ${m.license}`;host.append(row)}}return r}}
+ /* 开源素材的载入挪到 workbench-v29.js(按「素材套」分开,用到才载入) */
 })();
