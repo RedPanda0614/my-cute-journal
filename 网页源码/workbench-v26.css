@@ -117,6 +117,4 @@
 .ink-sw{width:22px;height:22px;border-radius:50%;border:1px solid rgba(0,0,0,.15);cursor:pointer;padding:0}
 .ink-sw.on{outline:2px solid var(--accent);outline-offset:2px}
 #inkPick{width:28px;height:24px;padding:0;border:none;background:none;cursor:pointer}
-/* v29 素材套 */
-.set-chips{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin:6px 0 2px;padding-top:6px;border-top:1px dashed var(--line)}
-.set-chips .set-lbl{font-size:11.5px;color:var(--soft);margin-right:2px}
+/* v29 素材套:样式统一放到 ui-rules.css 第 8 节 */

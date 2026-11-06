@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>手帐工作台</title>
 <link rel="stylesheet" href="fonts/fonts.css">
-<script src="fonts/catalog.js?v=30"></script>
+<script src="fonts/catalog.js?v=31"></script>
 <style>
 :root{--ink:#3b3226;--soft:#7a6a55;--cream:#f8f2e4;--paper:#fbf7ee;--kraft:#d6b78d;--line:#e2d4b8;--accent:#c0583f;--sage:#7f9c80;--mat:#4f866a}
 *{box-sizing:border-box}
@@ -426,9 +426,9 @@ button:disabled{opacity:.45;cursor:default}
 #textEditorPreview.font-error{color:var(--accent);font-size:13px;padding:16px;text-align:center}
 #mbox #textEditorMain{min-height:86px}
 </style>
-<link rel="stylesheet" href="workbench-extras.css?v=30">
-<link rel="stylesheet" href="workbench-v26.css?v=30">
-<link rel="stylesheet" href="ui-rules.css?v=30">
+<link rel="stylesheet" href="workbench-extras.css?v=31">
+<link rel="stylesheet" href="workbench-v26.css?v=31">
+<link rel="stylesheet" href="ui-rules.css?v=31">
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -1343,9 +1343,10 @@ function applyMeta(m){if(!m)return;if(m.__cats)cats=m.__cats;for(const id in m)i
 function startThumbDrag(e,a){e.preventDefault();const gh=$('#ghost'),sx=e.clientX,sy=e.clientY;let moving=false;gh.src=a.src;
  const mv=ev=>{if(!moving&&Math.hypot(ev.clientX-sx,ev.clientY-sy)>5){moving=true;gh.style.display='block'}if(moving){gh.style.left=ev.clientX-40+'px';gh.style.top=ev.clientY-40+'px';const el=document.elementFromPoint(ev.clientX,ev.clientY),tb=el&&el.closest('[data-library-category]');window.MaterialLibrary?.dragHover(el);$$('[data-library-category]').forEach(b=>b.classList.toggle('drop',b===tb&&b.dataset.tab&&b.dataset.tab!=='all'))}};
  const up=ev=>{window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up);gh.style.display='none';window.MaterialLibrary?.endDrag();
-  $$('[data-library-category]').forEach(b=>b.classList.remove('drop'));
+  $$('[data-library-category],[data-library-collection],[data-library-tag]').forEach(b=>b.classList.remove('drop'));
   if(!moving)return addItem(a);const el=document.elementFromPoint(ev.clientX,ev.clientY);
-  const folder=el&&el.closest('[data-library-collection]');if(folder){MaterialLibrary.addToCollection([a.id],folder.dataset.libraryCollection);return}const tb=el&&el.closest('[data-library-category]');if(tb&&tb.dataset.tab&&!['all','fav'].includes(tb.dataset.tab)){if(tb.dataset.tab!==a.cat){a.cat=tb.dataset.tab;save();tabsRender();drawerRender();toast(`放进了「${catName(a.cat)}」`)}return}
+  const folder=el&&el.closest('[data-library-collection]');if(folder){MaterialLibrary.addToCollection([a.id],folder.dataset.libraryCollection);return}
+  const tagChip=el&&el.closest('[data-library-tag]');if(tagChip){const t=tagChip.dataset.libraryTag;if(!a.tags.includes(t)){a.tags=[...a.tags,t];save();drawerRender()}return toast(`加上了标签「${t}」`)}const tb=el&&el.closest('[data-library-category]');if(tb&&tb.dataset.tab&&!['all','fav'].includes(tb.dataset.tab)){if(tb.dataset.tab!==a.cat){a.cat=tb.dataset.tab;save();tabsRender();drawerRender();toast(`放进了「${catName(a.cat)}」`)}return}
   if(el&&el.closest('#materialFavorite')){a.fav=true;save();tabsRender();drawerRender();return toast('收藏了')}
   if(el&&el.closest('#mat')){const p=pageMM(ev);addItem(a,p.x,p.y)}};
  window.addEventListener('pointermove',mv);window.addEventListener('pointerup',up)}
@@ -1454,8 +1455,8 @@ async function openSheet(src,name,mode='split',item=null){
   <div class="prop"><span>合并距离</span><input type="range" id="shMerge" min="0" max="24" value="${SH.merge}"><span id="shMergeV">${SH.merge}</span></div>
   <div class="row"><label class="chk"><input type="checkbox" id="shKey" checked>去掉背景</label><label class="chk"><input type="checkbox" id="shStick">加白边变贴纸</label>
    <button class="tag" id="shAll">全选</button><button class="tag" id="shNone">全不选</button></div>
-  <div class="row" style="margin-top:6px">放进<select id="shCat" class="sel">${catOpts}<option value="__new">＋ 新收纳夹…</option></select>
-   <input id="shNewCat" class="txt" style="width:110px;display:none" placeholder="收纳夹名字">名字<input id="shName" class="txt" style="width:120px" value="${name.replace(/"/g,'&quot;')}"></div></div>`:
+  <div class="row" style="margin-top:6px">放进<select id="shCat" class="sel">${catOpts}<option value="__new">＋ 新素材套…</option></select>
+   <input id="shNewCat" class="txt" style="width:110px;display:none" placeholder="素材套名字">名字<input id="shName" class="txt" style="width:120px" value="${name.replace(/"/g,'&quot;')}"></div></div>`:
   (item&&item.type==='text'?'<input type="checkbox" id="shKey" hidden>':`<div class="row" style="margin-top:6px"><label class="chk"><input type="checkbox" id="shKey">顺便去掉背景</label></div>`)}
  <div class="row" style="margin-top:10px;justify-content:flex-end"><span class="mini" id="shCount" style="margin-right:auto"></span><button class="tag red" id="shOk">${mode==='crop'?'剪好了':'放进抽屉'}</button><button class="tag" id="shNo">取消</button></div>`;
  openModal(true);
@@ -1506,7 +1507,7 @@ async function sheetApply(){
   it.clip={x:b.x/c.width,y:b.y/c.height,w:b.w/c.width,h:b.h/c.height};await rerenderText(it,true);return toast('剪好了。字还能继续改,「更多」里可以取消剪裁')}
  if(SH.mode==='crop'){const b=on[0],src=SH.key?keyOut(cropOf(SH.src,b),30):cropOf(SH.src,b);const it=SH.item;closeModal();
   if(it)return replaceAsset(it,src,'剪好了');return}
- let cat=$('#shCat').value;if(cat==='__new'){const n=$('#shNewCat').value.trim()||'新收纳夹';const c={id:'c-'+uid(),name:n};cats.push(c);cat=c.id}
+ let cat=$('#shCat').value;if(cat==='__new'){const n=$('#shNewCat').value.trim()||'新素材套';const c={id:'c-'+uid(),name:n};cats.push(c);cat=c.id}
  const base=$('#shName').value.trim()||SH.name,origin=window.MaterialLibrary?.splitAssetOptions(SH,cat)||{};let k=0;
  for(const b of on){k++;let c;
   if(SH.key){c=cropOf(SH.masked,b);if(!b.manual){const x=c.getContext('2d'),id=x.getImageData(0,0,c.width,c.height),d=id.data;
@@ -1794,15 +1795,16 @@ async function init(){
 }
 window.workbenchReady=init();
 </script>
-<script src="ui-kit.js?v=30"></script>
-<script src="workbench-extras.js?v=30"></script>
-<script src="workbench-tools.js?v=30"></script>
-<script src="workbench-editor.js?v=30"></script>
-<script src="material-library.js?v=30"></script>
-<script src="workbench-v26.js?v=30"></script>
-<script src="open-materials.js?v=30"></script>
-<script src="workbench-v27.js?v=30"></script>
-<script src="workbench-v28.js?v=30"></script>
-<script src="workbench-v29.js?v=30"></script>
+<script src="ui-kit.js?v=31"></script>
+<script src="workbench-extras.js?v=31"></script>
+<script src="workbench-tools.js?v=31"></script>
+<script src="workbench-editor.js?v=31"></script>
+<script src="material-library.js?v=31"></script>
+<script src="workbench-v26.js?v=31"></script>
+<script src="open-materials.js?v=31"></script>
+<script src="workbench-v27.js?v=31"></script>
+<script src="workbench-v28.js?v=31"></script>
+<script src="workbench-v29.js?v=31"></script>
+<script src="workbench-v31.js?v=31"></script>
 </body>
 </html>
