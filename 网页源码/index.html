@@ -427,6 +427,7 @@ button:disabled{opacity:.45;cursor:default}
 #mbox #textEditorMain{min-height:86px}
 </style>
 <link rel="stylesheet" href="workbench-extras.css">
+<link rel="stylesheet" href="workbench-v26.css">
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -475,7 +476,7 @@ button:disabled{opacity:.45;cursor:default}
    <label class="chk" style="padding:2px 4px"><input type="checkbox" id="exWhole">整本(所有页)</label>
    <button class="tag" data-ex="print">PNG · 300dpi 打印</button>
    <button class="tag" data-ex="screen">PNG · 屏幕看</button>
-   <button class="tag" data-ex="xhs">小红书图 3:4 · 1080×1440</button>
+   <button class="tag" data-ex="xhs">图片 · 1080×1440</button>
    <button class="tag" data-ex="pdf">PDF · 打印裁切线</button>
   </div>
  </header>
@@ -565,7 +566,7 @@ button:disabled{opacity:.45;cursor:default}
 <script>
 'use strict';
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-const SIZES={'A5':[148,210],'A6':[105,148],'B6':[128,182],'TN 标准':[110,210],'TN 护照':[89,124],'方形':[100,100],'小红书竖图':[108,144],'自定义':null};
+const SIZES={'A5':[148,210],'A6':[105,148],'B6':[128,182],'TN 标准':[110,210],'TN 护照':[89,124],'方形':[100,100],'108×144':[108,144],'自定义':null};
 const KINDS={cream:'米白',kraft:'牛皮',grid:'方格',dots:'点阵',lined:'横线',salt:'盐系近白',trace:'描图纸'};
 const FONTS=Object.fromEntries(FONT_CATALOG.map(f=>[f.name,f.family]));
 /* 字库覆盖来自每份实际字体的 cmap；禁止把缺字伪装成另一字体。 */
@@ -1202,7 +1203,7 @@ function renderLayers(){const L=$('#layers');if(!L)return;if(layerPageId!==curPa
 }
 
 function setPane(p){const app=$('#app'),cur=$('.ri.on')?.dataset.pane;
- if(p===cur&&!app.classList.contains('folded')){app.classList.add('folded')}else{app.classList.remove('folded');$$('.ri[data-pane]').forEach(b=>b.classList.toggle('on',b.dataset.pane===p));$$('.pn').forEach(s=>s.classList.toggle('on',s.dataset.pane===p))}
+ {app.classList.remove('folded');$$('.ri[data-pane]').forEach(b=>b.classList.toggle('on',b.dataset.pane===p));$$('.pn').forEach(s=>s.classList.toggle('on',s.dataset.pane===p))}
  $('#bFold').innerHTML=app.classList.contains('folded')?'<i>»</i>展开':'<i>«</i>收起';setTimeout(layout,20)}
 function quickPlace(it){const el=$(`.item[data-id="${it.id}"]`);if(el)place(el,it)}
 function act(a){const it=sel();if(!it)return;if(a==='prevpg')return moveItemToPage(-1);if(a==='nextpg')return moveItemToPage(1);const L=state.items,i=L.indexOf(it);commit();
@@ -1267,6 +1268,7 @@ function drawerRender(){
   u.onclick=()=>(tab==='tool'?$('#fInbox'):$('#fUp')).click();g.appendChild(u)}
  const q=dq.toLowerCase();
  const list=Object.values(assets).filter(a=>window.MaterialLibrary?MaterialLibrary.matches(a):!a.hidden&&(tab==='all'||(tab==='fav'?a.fav:a.cat===tab))&&(!dcol||a.color===dcol)&&(!q||a.name.toLowerCase().includes(q)||a.tags.some(t=>t.toLowerCase().includes(q))));
+ if(window.sortAssetList)window.sortAssetList(list);
  if(!list.length&&!['upload','tool'].includes(tab)){const e=document.createElement('div');e.className='empty';e.textContent=tab==='fav'&&!q&&!dcol?'还没有收藏。鼠标停在素材上,在弹出的卡片里点 ☆。':'没找到。换个词或颜色试试。';g.appendChild(e)}
  list.forEach(a=>{
   const t=document.createElement('div');t.className='thumb'+(batch&&picked.has(a.id)?' picked':'');t.dataset.id=a.id;
@@ -1595,7 +1597,7 @@ function fname(tag,ext){const d=new Date();return `手帐-${d.getMonth()+1}${Str
 function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}
 const toBlob=(c,type='image/png',q)=>new Promise(ok=>c.toBlob(ok,type,q));
 async function pngOf(mode,page){
- const {W,H}=dims(),xhsPaper=state.paper.size==='小红书竖图'&&!state.paper.landscape&&!state.paper.spread;
+ const {W,H}=dims(),xhsPaper=state.paper.size==='108×144'&&!state.paper.landscape&&!state.paper.spread;
  if(mode!=='xhs')return renderPage(mode==='print'?300/25.4:4,0,page);
  const pad=xhsPaper?0:70,dpm=Math.min((1080-pad*2)/W,(1440-pad*2)/H),pg=await renderPage(dpm,0,page);
  const out=cv(1080,1440),x=out.getContext('2d'),ox=(1080-pg.width)/2,oy=(1440-pg.height)/2;
@@ -1604,11 +1606,11 @@ async function pngOf(mode,page){
 async function exportPNG(mode){
  const whole=$('#exWhole').checked&&state.pages.length>1;
  if(mode==='pdf')return exportPDF(whole);
- const tag={print:'打印300dpi',screen:'屏幕',xhs:'小红书'}[mode];
+ const tag={print:'打印300dpi',screen:'屏幕',xhs:'1080x1440'}[mode];
  if(!whole){toast('正在导出…');download(await toBlob(await pngOf(mode,curPage())),fname(tag+(state.pages.length>1?'-第'+(state.cur+1)+'页':''),'png'));return toast('导出好了')}
  const files=[];for(let i=0;i<state.pages.length;i++){toast(`正在导出 第 ${i+1}/${state.pages.length} 页…`);
   files.push({name:`${String(i+1).padStart(2,'0')}.png`,data:new Uint8Array(await (await toBlob(await pngOf(mode,state.pages[i]))).arrayBuffer())})}
- download(makeZip(files),fname(tag+'-整本','zip'));toast(`整本 ${files.length} 页打包好了`+(mode==='xhs'?',可以直接按顺序发小红书':''))}
+ download(makeZip(files),fname(tag+'-整本','zip'));toast(`整本 ${files.length} 页打包好了,文件按页码排好`)}
 // 不压缩的 zip(图片本身已经压过)
 const CRC=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
 function crc32(d){let c=0xFFFFFFFF;for(let i=0;i<d.length;i++)c=CRC[(c^d[i])&255]^(c>>>8);return(c^0xFFFFFFFF)>>>0}
@@ -1682,7 +1684,7 @@ function thumbSoon(){clearTimeout(thumbT);thumbT=setTimeout(()=>refreshThumb(),5
 function syncTop(){const p=state.paper;$('#pSize').value=p.size;$('#pKind').value=p.kind;$('#bOrient').textContent=p.landscape?'横向':'竖向';$('#bSpread').textContent=p.spread?'跨页':'单页';$('#bSpread').classList.toggle('on',p.spread);
  $('#cGuides').setAttribute('aria-pressed',String(p.guides));$('#customWrap').style.display=p.size==='自定义'?'flex':'none';$('#cW').value=p.cw;$('#cH').value=p.ch}
 function initTop(){
- $('#pSize').innerHTML=Object.entries(SIZES).map(([k,v])=>`<option value="${k}">${k}${v?' · '+v[0]+'×'+v[1]:''}</option>`).join('').replace('108×144','3:4');
+ $('#pSize').innerHTML=Object.entries(SIZES).map(([k,v])=>`<option value="${k}">${k}${v&&k!==v[0]+'×'+v[1]?' · '+v[0]+'×'+v[1]:''}</option>`).join('');
  $('#pKind').innerHTML=Object.entries(KINDS).map(([k,v])=>`<option value="${k}">${v}</option>`).join('');
  const P=()=>state.paper;
  $('#pSize').onchange=e=>{commit();P().size=e.target.value;const s=SIZES[P().size];if(s){P().cw=s[0];P().ch=s[1]}syncTop();layout()};
@@ -1779,5 +1781,6 @@ window.workbenchReady=init();
 <script src="workbench-tools.js"></script>
 <script src="workbench-editor.js"></script>
 <script src="material-library.js"></script>
+<script src="workbench-v26.js"></script>
 </body>
 </html>
