@@ -22,7 +22,7 @@
   if(/人物|动物|植物|花朵|贴纸|sticker/i.test(name))return 'sticker';
   if(/涂鸦|星星|线条|边框|相框|装饰/i.test(name))return 'decor';return 'uncategorized';
  }
- function ensureCollection(id,name){if(!id||id.startsWith('style-'))return;let c=library.collections.find(c=>c.id===id);if(!c){c={id,name:name||'素材套'};library.collections.push(c)}else if(name&&c.name==='素材套')c.name=name;return c}
+ function ensureCollection(id,name){if(!id||id.startsWith('style-')||id.startsWith('set-'))return;let c=library.collections.find(c=>c.id===id);if(!c){c={id,name:name||'素材套'};library.collections.push(c)}else if(name&&c.name==='素材套')c.name=name;return c}
  function normalize(a){const previous=a.cat||'uncategorized';a.tags=[...new Set((a.tags||[]).filter(t=>typeof t==='string'&&t.trim()).map(t=>t.trim()))];a.collectionIds=[...new Set(Array.isArray(a.collectionIds)?a.collectionIds:[])];
   if(!fixed.has(previous)&&!previous.startsWith('set-')&&!['scrap','doodle','upload','tool','text','edit'].includes(previous)&&!previous.startsWith('style-')){const c=ensureCollection(previous,cats.find(c=>c.id===previous)?.name);if(c&&!a.collectionIds.includes(c.id))a.collectionIds.push(c.id)}
   if(!fixed.has(previous)&&!previous.startsWith('set-')){a.legacyCategory??=previous;a.cat=inferCategory(a,previous)}
@@ -52,7 +52,7 @@
  }
  tabsRender=function(){refreshHeader()};
  const oldDrawer=drawerRender;drawerRender=function(){migrate();oldDrawer();if(menuKind)renderMenu()};
- setTab=function(value){closeMenu();clearFilters();if(value==='fav'){tab='all';filters.favorite=true}else if(value==='upload'||value==='tool'){tab='all';filters.source=value==='upload'?'upload':'generated'}else if(value.startsWith('style-')){clearFilters();filters.style=value.slice(6)}else if(library.collections.some(c=>c.id===value)||cats.some(c=>c.id===value)){migrate();tab='all';filters.collection=value}else tab=fixed.has(value)||value.startsWith('set-')?value:'all';drawerRender()};
+ setTab=function(value){closeMenu();clearFilters();if(value==='fav'){tab='all';filters.favorite=true}else if(value==='upload'||value==='tool'){tab='all';filters.source=value==='upload'?'upload':'generated'}else if(value.startsWith('style-')){clearFilters();filters.style=value.slice(6)}else if(value.startsWith('set-')){tab=value}else if(library.collections.some(c=>c.id===value)||cats.some(c=>c.id===value)){migrate();tab='all';filters.collection=value}else tab=fixed.has(value)||value.startsWith('set-')?value:'all';drawerRender()};
  API.openStyle=id=>{clearFilters();filters.style=id;drawerRender()};
  function closeMenu(){menuKind=null;if(typeof menu!=='undefined'){menu.hidden=true;menu.replaceChildren()}$$('.material-header [aria-expanded]').forEach(b=>b.setAttribute('aria-expanded','false'))}
  function toggleMenu(kind,anchor){if(menuKind===kind)return closeMenu();hideInfo(true);menuKind=kind;menuQuery='';menu.hidden=false;renderMenu();const r=anchor.getBoundingClientRect(),pane=$('#pane').getBoundingClientRect(),width=Math.min(330,Math.max(204,pane.width-12),innerWidth-16);menu.style.width=width+'px';menu.style.left=Math.max(8,Math.min(pane.left+6,innerWidth-width-8))+'px';menu.style.top=Math.min(r.bottom+5,innerHeight-160)+'px';menu.style.maxHeight=Math.max(120,Math.min(innerHeight-r.bottom-14,innerHeight*.65))+'px';$$('.material-header [aria-expanded]').forEach(b=>b.setAttribute('aria-expanded',String(b===anchor)));menu.querySelector('input[type=search]')?.focus()}
@@ -86,6 +86,8 @@
  API.myTags=()=>library.myTags||(library.myTags=[]);
  API.addMyTag=name=>{library.myTags=[...new Set([...(library.myTags||[]),name])];library.tags=[...new Set([...library.tags,name])];save()};
  API.removeMyTag=name=>{library.myTags=(library.myTags||[]).filter(t=>t!==name);save()};
+ // 清掉旧版本误建的「收纳夹」(编号和自带素材套一样)
+ API.cleanSetCollections=()=>{const bad=library.collections.filter(c=>String(c.id).startsWith('set-')).map(c=>c.id);if(!bad.length)return 0;library.collections=library.collections.filter(c=>!bad.includes(c.id));cats=cats.filter(c=>!bad.includes(c.id));for(const a of Object.values(assets))if(a.collectionIds?.some(id=>bad.includes(id)))a.collectionIds=a.collectionIds.filter(id=>!bad.includes(id));if(bad.includes(filters.collection))filters.collection='';save();return bad.length};
  API.endDrag=()=>{clearTimeout(dragTimer);dragTarget=null;setTimeout(closeMenu,0)};
  catEditor=function(c){return collectionDialog(c?library.collections.find(x=>x.id===c.id)||ensureCollection(c.id,c.name):null)};
  // 既有详情与批量流程保留；分类只列固定类型，素材套独立多选。

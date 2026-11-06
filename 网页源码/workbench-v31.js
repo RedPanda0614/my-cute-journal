@@ -1,6 +1,6 @@
 /* v31:素材栏里新建素材套、新建标签
-   - 「素材套」一行:自带的套 + 自己建的套 + 「＋ 新建」。自己建的套 = 以前的收纳夹,一个素材可以放进好几套。
-   - 「标签」一行:自己建的标签 + 「＋ 新建」。点标签只看带这个标签的素材,可以和分类、素材套一起用。
+   - 下面「素材套」一行:自带的套 + 自己建的套 + 「＋ 新建」。自己建的套 = 以前的收纳夹,一个素材可以放进好几套。
+   - 最上面「标签」一行:自带分类 + 自己建的标签 + 「＋ 新建」。点自建标签只看带这个标签的素材,可以和素材套一起用。
    - 把素材拖到套或标签上就加进去;双击自己建的套或标签可以改名、删除。 */
 (function(){
  const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
@@ -35,20 +35,26 @@
  const oldMatches=ML.matches;ML.matches=function(a){return oldMatches.apply(this,arguments)&&(!activeTag||a.tags?.includes(activeTag))};
  const oldSetTab=setTab;setTab=function(v){if(v==='all')activeTag='';return oldSetTab.apply(this,arguments)};
 
- /* ---------- 画在素材栏上 ---------- */
+ /* ---------- 画在素材栏上 ----------
+    第一行「标签」:自带分类 + 自己建的标签 + 「＋ 新建」
+    第二行「素材套」:自带的套 + 自己建的套 + 「＋ 新建」 */
  const addChip=(label,onClick)=>{const b=el('button','chip chip-add','＋ '+label);b.type='button';b.onclick=onClick;return b};
- const tagRow=el('div','set-chips tag-chips');tagRow.id='tagChips';
- function paint(){const setRow=$('#setChips');if(!setRow)return;const cur=ML.filters?.collection||'';
+ const tagTitle=el('div','row-title','标签');
+ function paint(){const catRow=$('#catChips'),setRow=$('#setChips');if(!catRow)return;const cur=ML.filters?.collection||'';
+  if(catRow.previousElementSibling!==tagTitle)catRow.before(tagTitle);
+  catRow.querySelectorAll('.my-tag,.chip-add').forEach(e=>e.remove());
+  for(const t of tags()){const n=vis().filter(a=>a.tags?.includes(t)).length,b=el('button','chip my-tag'+(activeTag===t?' on':''),`${esc(t)}<small>${n}</small>`);b.type='button';b.dataset.libraryTag=t;b.title='点一下只看这个标签 · 把素材拖到这里加上标签 · 双击改名或删除';
+   b.onclick=()=>{activeTag=activeTag===t?'':t;drawerRender()};b.ondblclick=e=>{e.preventDefault();editTag(t)};catRow.append(b)}
+  catRow.append(addChip('新建',newTag));
+  if(!setRow)return;
   setRow.querySelectorAll('.mine,.chip-add').forEach(e=>e.remove());
   for(const c of mine()){const n=vis().filter(a=>a.collectionIds?.includes(c.id)).length,b=el('button','chip mine'+(cur===c.id?' on':''),`${esc(c.name)}<small>${n}</small>`);b.type='button';
    b.dataset.libraryCollection=c.id;b.title='把素材拖到这里放进这套 · 双击改名或删除';b.onclick=()=>setTab(c.id);b.ondblclick=e=>{e.preventDefault();editSet(c)};setRow.append(b)}
-  setRow.append(addChip('新建',newSet));
-  if(tagRow.previousElementSibling!==setRow)setRow.after(tagRow);
-  tagRow.innerHTML='<span class="set-lbl">标签</span>';
-  for(const t of tags()){const n=vis().filter(a=>a.tags?.includes(t)).length,b=el('button','chip'+(activeTag===t?' on':''),`${esc(t)}<small>${n}</small>`);b.type='button';b.dataset.libraryTag=t;b.title='点一下只看这个标签 · 把素材拖到这里加上标签 · 双击改名或删除';
-   b.onclick=()=>{activeTag=activeTag===t?'':t;drawerRender()};b.ondblclick=e=>{e.preventDefault();editTag(t)};tagRow.append(b)}
-  tagRow.append(addChip('新建',newTag))}
+  setRow.append(addChip('新建',newSet))}
  const oldDR=drawerRender;drawerRender=function(){const r=oldDR.apply(this,arguments);paint();return r};
- window.materialLibraryReady?.then(()=>drawerRender());
+ // 清掉旧版本误建的「收纳夹」,打开作品后也再清一次
+ const clean=()=>{if(ML.cleanSetCollections?.())drawerRender()};
+ window.materialLibraryReady?.then(()=>{clean();drawerRender()});
+ const oldApply=applyProject;applyProject=async function(){const r=await oldApply.apply(this,arguments);clean();return r};
  paint();
 })();

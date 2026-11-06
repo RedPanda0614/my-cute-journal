@@ -75,3 +75,4 @@
 .set-chips .chip-add{border-style:dashed;color:var(--soft);background:transparent}
 .set-chips .chip-add:hover{color:var(--accent);border-color:var(--accent)}
 .cat-chips .chip.drop,.set-chips .chip.drop{outline:2px dashed var(--accent);outline-offset:1px}
+.row-title{font-size:11.5px;color:var(--soft);margin:0 0 4px}
