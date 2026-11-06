@@ -19,7 +19,16 @@
  WB.mergeLayers=mergeLayers;WB.deleteLayers=deleteLayers;
  /* 人物提取：本地 worker 模型，先预览，再将透明结果应用到当前照片。 */
  let worker,serial=0;const jobs=new Map();
- function segmentPerson(source){if(location.protocol==='file:')return Promise.reject(new Error('请先双击项目目录中的「启动工作台.command」，再使用人物提取。'));
+ // 双击打开(file://)时:不用 worker,直接在页面里跑;运行库和模型从 person-pack.js 读(浏览器允许 file:// 加载脚本)
+ let pageModel=null;const loadScript=src=>new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=()=>no(new Error('找不到 '+src+',请确认 vendor 文件夹完整'));document.head.appendChild(s)});
+ const b64=t=>{const bin=atob(t),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return u};
+ function pageSegmenter(){if(pageModel)return pageModel;pageModel=(async()=>{toast('第一次用人物提取,正在加载模型(约 30MB,本地读取)…');
+   if(!window.Vision)await loadScript('vendor/mediapipe/vision_bundle.js');if(!window.__PERSON_PACK)await loadScript('vendor/mediapipe/person-pack.js');
+   const P=window.__PERSON_PACK,wasmUrl=URL.createObjectURL(new Blob([b64(P.wasm)],{type:'application/wasm'})),model=b64(P.model),loader='data:text/javascript;base64,'+P.loader;P.wasm=P.model=null;
+   return Vision.ImageSegmenter.createFromOptions({wasmLoaderPath:loader,wasmBinaryPath:wasmUrl},{baseOptions:{modelAssetBuffer:model,delegate:'CPU'},runningMode:'IMAGE',outputConfidenceMasks:true,outputCategoryMask:false,canvas:document.createElement('canvas')})})().catch(e=>{pageModel=null;throw e});return pageModel}
+ async function segmentOnPage(source){const scale=Math.min(1,1024/Math.max(source.width,source.height)),c=cv(Math.max(1,Math.round(source.width*scale)),Math.max(1,Math.round(source.height*scale)));c.getContext('2d').drawImage(source,0,0,c.width,c.height);
+  const engine=await pageSegmenter(),result=engine.segment(c);try{const masks=result.confidenceMasks;if(!masks?.length)throw new Error('模型没有返回人物轮廓');const m=masks[0],values=new Float32Array(m.getAsFloat32Array());for(let i=0;i<values.length;i++)values[i]=1-values[i];return{width:m.width,height:m.height,values}}finally{result.close()}}
+ function segmentPerson(source){if(location.protocol==='file:')return segmentOnPage(source);
   if(!worker){worker=new Worker('person-worker.js');worker.onmessage=({data})=>{const job=jobs.get(data.id);if(!job)return;clearTimeout(job.timer);jobs.delete(data.id);data.error?job.reject(new Error(data.error)):job.resolve(data)};worker.onerror=()=>{for(const j of jobs.values()){clearTimeout(j.timer);j.reject(new Error('人物模型启动失败，请刷新后重试'))}jobs.clear();worker?.terminate();worker=null}}
   const scale=Math.min(1,1024/Math.max(source.width,source.height));return createImageBitmap(source,{resizeWidth:Math.max(1,Math.round(source.width*scale)),resizeHeight:Math.max(1,Math.round(source.height*scale)),resizeQuality:'high'}).then(bitmap=>new Promise((resolve,reject)=>{const id=++serial,timer=setTimeout(()=>{for(const j of jobs.values()){clearTimeout(j.timer);j.reject(new Error('人物识别超时，请重试'))}jobs.clear();worker?.terminate();worker=null},60000);jobs.set(id,{resolve,reject,timer});worker.postMessage({id,bitmap},[bitmap])}));
  }

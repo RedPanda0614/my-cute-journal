@@ -5,4 +5,4 @@
 - 模型与运行库均随项目本地保存。推理在浏览器 Web Worker 中进行，照片不发往外部服务。
 - 合并头发、皮肤、衣服和配饰的置信度得到人物透明蒙版；推理输入最大1024px、结果最大2000px。
 - 使用 CPU 避免依赖 WebGPU；适合人像照片，细发丝、遮挡和复杂背景仍可能需要用不规则裁切修整。没有有效人物时不应用空结果。
-- 浏览器安全限制不允许 file:// 加载 worker/wasm，请使用项目根目录的「启动工作台.command」，或自己启动 localhost 服务。
+- 双击打开(file://)时浏览器不允许加载 worker/wasm 文件。所以另外打包了 `person-pack.js`(运行库、loader 和模型的 base64),双击打开时在页面里直接运行。换模型后运行 `scripts/build_person_pack.py` 重新生成。用「启动工作台.command」打开时仍走 Web Worker。

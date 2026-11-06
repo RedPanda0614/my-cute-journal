@@ -1081,8 +1081,8 @@ function renderCtx(){
  let h=it.locked?'<span class="lbl">已锁定</span>':'';
  if(isT)h+=`<button class="cb" id="bEditText">编辑文字</button>
   <button id="tf" class="cb" title="预览字体">${esc(Object.entries(FONTS).find(([k,v])=>v===it.font)?.[0]||'字体')}</button>
-  <select id="ts" class="sel"><optgroup label="字效">${ART.filter(a=>a.id!=='ransom'||it.style==='ransom').map(a=>`<option value="${a.id}" ${a.id===it.style?'selected':''}>${a.name}</option>`).join('')}</optgroup><optgroup label="手帐标题">${TITLES.map(a=>`<option value="${a.id}" ${a.id===it.style?'selected':''}>${a.name}</option>`).join('')}</optgroup></select>
-  <span class="f">${INKS.map(c=>`<span class="swatch ${c===it.color?'on':''}" data-c="${c}" style="background:${c}"></span>`).join('')}</span>
+
+  <div class="f tcolor"><span class="tc-lbl">颜色</span><input type="color" id="tColor" value="${/^#[0-9a-f]{6}$/i.test(it.color)?it.color:'#3b3226'}" title="自己选颜色"><input id="tHex" class="txt" value="${esc(it.color)}" maxlength="7" spellcheck="false" title="也可以直接输入色号"><div class="tc-pre">${INKS.map(c=>`<span class="swatch ${c===it.color?'on':''}" data-c="${c}" style="background:${c}" title="${c}"></span>`).join('')}</div></div>
   <button class="cb" data-op="crop">剪裁</button><span class="vsep"></span>`;
  if(isT&&!it.cutLetter)h+=isLayoutText(it)?`<div id="tLayout" class="tlayout">
   <div class="tl-row"><span>对齐</span><div class="tl-seg">${[['left','左'],['center','中'],['right','右']].map(([k,l])=>`<button type="button" class="${(it.align||'left')===k?'on':''}" data-align="${k}" ${it.vertical?'disabled':''}>${l}</button>`).join('')}</div></div>
@@ -1097,8 +1097,8 @@ function renderCtx(){
   <span class="f">透明<input type="range" id="po" min="10" max="100" value="${Math.round(it.opacity*100)}"><b>${Math.round(it.opacity*100)}%</b></span><span class="vsep"></span>`;
  if(!isT)h+=`<button class="cb" data-op="key">去背景</button><button class="cb" data-op="sticker">贴纸</button><button class="cb" data-op="torn">撕边</button><button class="cb" data-op="shape">不规则裁切</button><button class="cb" data-op="crop">剪裁</button><span class="vsep"></span>`;
  h+=`<div class="ctx-actions"><button class="cb" data-a="flip">翻转</button><button class="cb" data-a="dup">复制</button>
-  <div class="more${moreOpen?' open':''}"><button type="button" class="cb more-btn" aria-expanded="${moreOpen}">更多操作</button><div class="menu"${moreOpen?'':' hidden'}>
-   ${isT?`<label class="chk"><input type="checkbox" id="tv" ${it.vertical?'checked':''}>竖排</label><label class="chk"><input type="checkbox" id="ti" ${it.ink?'checked':''}>墨色不均</label><button class="cb" id="tr">换个随机</button>`: ''}
+  <div class="more open"><div class="menu">
+   ${isT?`<label class="chk"><input type="checkbox" id="tv" ${it.vertical?'checked':''}>竖排</label>${['bounce','ransom','stamp'].includes(it.style)||(it.style||'').startsWith('t_')?'<button class="cb" id="tr">换个随机</button>':''}`: ''}
    <button class="cb" data-a="up">上移一层</button><button class="cb" data-a="down">下移一层</button><button class="cb" data-a="top">置顶</button><button class="cb" data-a="bottom">置底</button><button class="cb" data-a="lock">${it.locked?'解锁':'锁定'}</button><button class="cb" data-a="hide">隐藏</button>
    <button class="cb" data-a="prevpg">移到上页</button><button class="cb" data-a="nextpg">移到下页</button>${isT?(it.clip?'<button class="cb" data-op="uncrop">取消剪裁</button>':''):'<button class="cb" data-op="reset">恢复原图(取消剪裁)</button>'}</div></div>
   <button class="cb warn" data-a="del">删除</button></div>`;
@@ -1107,7 +1107,6 @@ function renderCtx(){
  [pw,pr,po].forEach(e=>e.addEventListener('pointerdown',commit));
  pw.oninput=()=>{const k=+pw.value/it.w;it.w=+pw.value;it.h*=k;quickPlace(it);pw.nextElementSibling.textContent=it.w.toFixed(0)+'mm'};
  pw.onchange=()=>{if(isT&&it.boxW){it.boxW=+pw.value;rerenderTextFit(it)}else if(isT)rerenderText(it,true)};
- const mb=P.querySelector('.more-btn');if(mb)mb.onclick=()=>{moreOpen=!moreOpen;const m=mb.parentElement;m.classList.toggle('open',moreOpen);mb.setAttribute('aria-expanded',String(moreOpen));m.querySelector('.menu').hidden=!moreOpen};
  if(isLayoutText(it)){let tt;const later=fn=>{clearTimeout(tt);tt=setTimeout(fn,90)},redo=()=>it.boxW?rerenderTextFit(it):rerenderTextFit(it,{keepTop:true});
   P.querySelectorAll('#tLayout input').forEach(e=>{e.addEventListener('pointerdown',commit,{once:true});e.addEventListener('focus',commit,{once:true})});
   P.querySelectorAll('[data-align]').forEach(b=>b.onclick=()=>{commit();it.align=b.dataset.align;redo()});
@@ -1122,10 +1121,13 @@ function renderCtx(){
  if(isT){
   $('#bEditText').onclick=()=>openTextEditor(it.style,it.font,it);
   $('#tf').onclick=()=>openFontPicker(it);
-  $('#ts').onchange=async e=>{const d=ALLSTYLES.find(a=>a.id===e.target.value),draft={...it,style:d.id,font:d.font,color:d.id.startsWith('t_')?PAL[d.key]:d.color};if(d.id.startsWith('t_')){draft.sub=it.sub||TEXT_SUB;draft.subFont=subtitleFont(draft);draft.size=11}try{await validateTextFonts(draft)}catch(err){e.target.value=it.style;return toast(err.message)}commit();Object.assign(it,draft);await rerenderText(it,true)};
-  P.querySelectorAll('.swatch').forEach(s=>s.onclick=()=>{it.color=s.dataset.c;rerenderText(it)});
-  $('#tv').onchange=e=>{it.vertical=e.target.checked;rerenderText(it)};$('#ti').onchange=e=>{it.ink=e.target.checked;rerenderText(it)};
-  $('#tr').onclick=()=>{it.seed=Math.floor(Math.random()*1e6);rerenderText(it)}}
+  if($('#ts'))$('#ts').onchange=async e=>{const d=ALLSTYLES.find(a=>a.id===e.target.value),draft={...it,style:d.id,font:d.font,color:d.id.startsWith('t_')?PAL[d.key]:d.color};if(d.id.startsWith('t_')){draft.sub=it.sub||TEXT_SUB;draft.subFont=subtitleFont(draft);draft.size=11}try{await validateTextFonts(draft)}catch(err){e.target.value=it.style;return toast(err.message)}commit();Object.assign(it,draft);await rerenderText(it,true)};
+  $('#tv').onchange=e=>{it.vertical=e.target.checked;rerenderText(it)};
+  if($('#tr'))$('#tr').onclick=()=>{it.seed=Math.floor(Math.random()*1e6);rerenderText(it)};
+  {let ct;const tc=$('#tColor'),hx=$('#tHex'),setC=(v,from)=>{it.color=v;if(from!=='pick'&&/^#[0-9a-f]{6}$/i.test(v))tc.value=v;if(from!=='hex')hx.value=v;P.querySelectorAll('.swatch').forEach(s=>s.classList.toggle('on',s.dataset.c===v));clearTimeout(ct);ct=setTimeout(()=>rerenderText(it,true),70)};
+   tc.addEventListener('pointerdown',commit,{once:true});tc.addEventListener('focus',commit,{once:true});tc.oninput=()=>setC(tc.value,'pick');
+   hx.addEventListener('focus',commit,{once:true});hx.oninput=()=>{const v=hx.value.trim();if(/^#[0-9a-f]{6}$/i.test(v))setC(v.toLowerCase(),'hex')};
+   P.querySelectorAll('.swatch').forEach(sw=>sw.onclick=()=>{commit();setC(sw.dataset.c,'pre')})}}
  if(drag)return;requestAnimationFrame(()=>{const r=$('#desk').getBoundingClientRect();if(Math.abs(r.height-(layout._h||0))>2){layout._h=r.height;layout()}})}
 /* ---------- 图层排序与分组（items 仍按从底到顶绘制） ---------- */
 const layerPicked=new Set();let layerPageId=null,layerDrag=null;
@@ -1523,22 +1525,36 @@ function doodle(kind){const c=cv(200,200),x=c.getContext('2d');x.lineCap='round'
  return c}
 async function builtins(){
  const tapes=[
-  ['米色格纹','#efe2c4',(x,W,H)=>{x.strokeStyle='rgba(192,88,63,.35)';x.lineWidth=3;for(let i=0;i<W;i+=26){x.beginPath();x.moveTo(i,0);x.lineTo(i,H);x.stroke()}for(let i=13;i<H;i+=26){x.beginPath();x.moveTo(0,i);x.lineTo(W,i);x.stroke()}}],
-  ['薄荷条纹','#cfe0cf',(x,W,H)=>{x.fillStyle='rgba(255,255,255,.7)';for(let i=-H;i<W;i+=34){x.beginPath();x.moveTo(i,0);x.lineTo(i+14,0);x.lineTo(i+14+H,H);x.lineTo(i+H,H);x.fill()}}],
-  ['粉色圆点','#f0cfc6',(x,W,H)=>{x.fillStyle='rgba(255,255,255,.85)';for(let i=14;i<W;i+=30)for(let j=16;j<H;j+=30){x.beginPath();x.arc(i+(j/30%2)*15,j,5,0,7);x.fill()}}],
-  ['牛皮纸','#c9a77a',(x,W,H,R)=>{for(let i=0;i<900;i++){x.fillStyle=`rgba(80,50,20,${.05+R()*.12})`;x.fillRect(R()*W,R()*H,2,1)}}],
-  ['雾蓝格子','#d7e1ea',(x,W,H)=>{x.fillStyle='rgba(111,143,181,.25)';for(let i=0;i<W;i+=40)x.fillRect(i,0,20,H);for(let j=0;j<H;j+=40)x.fillRect(0,j,W,20)}],
-  ['芥末黄','#e8c36a',()=>{}],
-  ['小字母','#f6efe0',(x,W,H)=>{x.fillStyle='rgba(59,50,38,.55)';x.font='22px "Special Elite",monospace';for(let i=10;i<W;i+=140)x.fillText('hello · today',i,72)}],
-  ['描图纸','#ffffff',(x,W,H)=>{x.strokeStyle='rgba(120,120,120,.18)';x.lineWidth=2;x.beginPath();x.moveTo(0,8);x.lineTo(W,8);x.moveTo(0,H-8);x.lineTo(W,H-8);x.stroke()},.45],
+  ['米色格子胶带','#efe2c4',(x,W,H)=>{x.strokeStyle='rgba(192,88,63,.35)';x.lineWidth=3;for(let i=0;i<W;i+=26){x.beginPath();x.moveTo(i,0);x.lineTo(i,H);x.stroke()}for(let i=13;i<H;i+=26){x.beginPath();x.moveTo(0,i);x.lineTo(W,i);x.stroke()}}],
+  ['绿条纹胶带','#cfe0cf',(x,W,H)=>{x.fillStyle='rgba(255,255,255,.7)';for(let i=-H;i<W;i+=34){x.beginPath();x.moveTo(i,0);x.lineTo(i+14,0);x.lineTo(i+14+H,H);x.lineTo(i+H,H);x.fill()}}],
+  ['粉圆点胶带','#f0cfc6',(x,W,H)=>{x.fillStyle='rgba(255,255,255,.85)';for(let i=14;i<W;i+=30)for(let j=16;j<H;j+=30){x.beginPath();x.arc(i+(j/30%2)*15,j,5,0,7);x.fill()}}],
+  ['牛皮纸胶带','#c9a77a',(x,W,H,R)=>{for(let i=0;i<900;i++){x.fillStyle=`rgba(80,50,20,${.05+R()*.12})`;x.fillRect(R()*W,R()*H,2,1)}}],
+  ['蓝格子胶带','#d7e1ea',(x,W,H)=>{x.fillStyle='rgba(111,143,181,.25)';for(let i=0;i<W;i+=40)x.fillRect(i,0,20,H);for(let j=0;j<H;j+=40)x.fillRect(0,j,W,20)}],
+  ['黄色胶带','#e8c36a',()=>{}],
+  ['字母胶带','#f6efe0',(x,W,H)=>{x.fillStyle='rgba(59,50,38,.55)';x.font='22px "Special Elite",monospace';for(let i=10;i<W;i+=140)x.fillText('hello · today',i,72)}],
+  ['透明胶带','#ffffff',(x,W,H)=>{x.strokeStyle='rgba(120,120,120,.18)';x.lineWidth=2;x.beginPath();x.moveTo(0,8);x.lineTo(W,8);x.moveTo(0,H-8);x.lineTo(W,H-8);x.stroke()},.45],
  ];
  const ttags=[['格子','复古'],['条纹','清新'],['圆点','可爱'],['牛皮纸','复古'],['格子','清新'],['纯色'],['字母','复古'],['透明','盐系']];
- for(const [i,[n,b,d,al]] of tapes.entries())await addAsset(zigTape(b,d,al).toDataURL(),{id:'b-tape-'+i,name:n+'胶带',source:'built-in',cat:'tape',tags:['胶带',...ttags[i]]});
- const scraps=[['grid','方格便签'],['lined','横线纸条'],['tag','牛皮吊牌'],['ticket','票根'],['dot','圆点标签'],['memo','便利贴'],['trace','描图纸片']];
+ for(const [i,[n,b,d,al]] of tapes.entries())await addAsset(zigTape(b,d,al).toDataURL(),{id:'b-tape-'+i,name:n,source:'built-in',cat:'tape',tags:['胶带',...ttags[i]]});
+ const scraps=[['grid','方格便签'],['lined','横线纸条'],['tag','牛皮吊牌'],['ticket','票根'],['dot','圆标签'],['memo','黄色便利贴'],['trace','透明纸片']];
  for(const [k,n] of scraps)await addAsset(scrap(k).toDataURL(),{id:'b-scrap-'+k,name:n,source:'built-in',cat:'scrap',tags:['纸片',...({grid:['便签','格子'],lined:['纸条'],tag:['复古','牛皮纸'],ticket:['旅行','复古'],dot:['可爱'],memo:['便签'],trace:['透明','盐系']}[k])]});
- const dds=[['star','四角星'],['heart','爱心'],['leaf','叶子'],['cloud','云'],['wave','波浪线'],['dots','彩色圆点']];
+ const dds=[['star','星星'],['heart','爱心'],['leaf','叶子'],['cloud','云朵'],['wave','波浪线'],['dots','彩色圆点']];
  for(const [k,n] of dds)await addAsset(doodle(k).toDataURL(),{id:'b-doodle-'+k,name:n,source:'built-in',cat:'doodle',tags:['涂鸦','装饰']});
 }
+
+
+/* ---------- 素材名字整理(v25):规则见 改进计划.md 第二节 ---------- */
+// 名字 = 特征 + 东西,2~6 个字;风格(盐系/复古…)放标签,不写进名字前缀。
+// 只改还是旧默认名的素材,你自己改过的名字不动。
+const KIT_SHORT={salt:'盐系',retro:'复古',american:'杂志',travel:'旅行'},KIT_OLD={salt:'盐系',retro:'复古',american:'美式杂志',travel:'手绘旅行'};
+const KIT_ITEM={torn:['撕边纸','撕边纸'],grid:['方格纸','方格纸'],linen:['纤维纸','纤维纸'],trace:['描图纸','透明纸'],news:['报纸','报纸'],tag:['吊牌','吊牌'],lace:['蕾丝','蕾丝'],ribbon:['蝴蝶结','蝴蝶结'],clip:['回形针','回形针'],stars:['星星','星星'],stitch:['缝线','缝线'],ticket:['票根','票根']};
+const NAME_FIX={'b-tape-0':['米色格纹胶带','米色格子胶带'],'b-tape-1':['薄荷条纹胶带','绿条纹胶带'],'b-tape-2':['粉色圆点胶带','粉圆点胶带'],'b-tape-4':['雾蓝格子胶带','蓝格子胶带'],'b-tape-5':['芥末黄胶带','黄色胶带'],'b-tape-6':['小字母胶带','字母胶带'],'b-tape-7':['描图纸胶带','透明胶带'],
+ 'b-scrap-dot':['圆点标签','圆标签'],'b-scrap-memo':['便利贴','黄色便利贴'],'b-scrap-trace':['描图纸片','透明纸片'],'b-doodle-star':['四角星','星星'],'b-doodle-cloud':['云','云朵']};
+for(const k in KIT_SHORT)for(const t in KIT_ITEM)NAME_FIX['kit-'+k+'-'+t]=[KIT_OLD[k]+' · '+KIT_ITEM[t][0],KIT_SHORT[k]+KIT_ITEM[t][1]];
+function fixAssetNames(){let n=0;for(const [id,[o,nw]] of Object.entries(NAME_FIX)){const a=assets[id];if(!a)continue;
+  if(a.name===o){a.name=nw;n++}const style=id.startsWith('kit-')?KIT_SHORT[id.split('-')[1]]:null;if(style&&!a.tags?.includes(style))a.tags=[...(a.tags||[]).filter(t=>t!==KIT_OLD[id.split('-')[1]]),style];
+  for(const p of state.pages)for(const it of p.items)if((it.asset===id||it.orig===id)&&it.name===o)it.name=nw}
+ return n}
 
 /* ---------- 工具箱:任务单 ---------- */
 function skillCards(){const box=$('#skillCards');
@@ -1736,7 +1752,7 @@ async function init(){
  $('#fInbox').onchange=e=>{startUpload([...e.target.files],'tool');e.target.value=''};
  $('#bInbox').onclick=()=>$('#fInbox').click();
  $$('[data-pg]').forEach(b=>b.onclick=()=>pageOp(b.dataset.pg));
- $('#fProj').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;try{const p=JSON.parse(await f.text());commit();await applyProject(p);selId=null;syncTop();layout();drawerRender();pagebar();save();toast('打开了')}catch(err){toast('这个文件打不开')}};
+ $('#fProj').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;try{const p=JSON.parse(await f.text());commit();await applyProject(p);fixAssetNames();selId=null;syncTop();layout();drawerRender();pagebar();save();toast('打开了')}catch(err){toast('这个文件打不开')}};
  let dc=0;window.addEventListener('dragenter',e=>{if(e.dataTransfer.types.includes('Files')){dc++;$('#dropHint').style.display='flex'}});
  window.addEventListener('dragleave',()=>{if(--dc<=0){dc=0;$('#dropHint').style.display='none'}});
  window.addEventListener('dragover',e=>e.preventDefault());
@@ -1754,7 +1770,7 @@ async function init(){
  window.addEventListener('resize',()=>{clearTimeout(init._r);init._r=setTimeout(layout,120)});
  try{await document.fonts.ready}catch(e){}
  await builtins();
- await applyProject(await loadSaved());
+ await applyProject(await loadSaved());if(fixAssetNames())save();
  syncTop();layout();drawerRender();pagebar();
 }
 window.workbenchReady=init();
