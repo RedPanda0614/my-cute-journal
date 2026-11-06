@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>手帐工作台</title>
 <link rel="stylesheet" href="fonts/fonts.css">
-<script src="fonts/catalog.js?v=33"></script>
+<script src="fonts/catalog.js?v=34"></script>
 <style>
 :root{--ink:#3b3226;--soft:#7a6a55;--cream:#f8f2e4;--paper:#fbf7ee;--kraft:#d6b78d;--line:#e2d4b8;--accent:#c0583f;--sage:#7f9c80;--mat:#4f866a}
 *{box-sizing:border-box}
@@ -426,9 +426,9 @@ button:disabled{opacity:.45;cursor:default}
 #textEditorPreview.font-error{color:var(--accent);font-size:13px;padding:16px;text-align:center}
 #mbox #textEditorMain{min-height:86px}
 </style>
-<link rel="stylesheet" href="workbench-extras.css?v=33">
-<link rel="stylesheet" href="workbench-v26.css?v=33">
-<link rel="stylesheet" href="ui-rules.css?v=33">
+<link rel="stylesheet" href="workbench-extras.css?v=34">
+<link rel="stylesheet" href="workbench-v26.css?v=34">
+<link rel="stylesheet" href="ui-rules.css?v=34">
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -521,11 +521,11 @@ button:disabled{opacity:.45;cursor:default}
     <button class="tool on" id="bMatteHoles" aria-pressed="true">清理中空背景</button>
     <label class="edit-slider">颜色容差<input type="range" id="tol" min="8" max="90" value="34"></label>
    </div></details>
-   <details class="edit-section" id="editCropSection"><summary>裁切与拆分</summary><div class="edit-body"><select class="sel" id="editCropMode" aria-label="裁切方式"><option value="crop">矩形裁切</option><option value="shape">不规则裁切</option><option value="split">素材页拆分</option></select><button class="tool" id="editCropGo">开始裁切</button><button class="tool edit-generated" id="editUncrop" hidden>取消文字裁切</button></div></details>
+   <details class="edit-section" id="editCropSection"><summary>裁切与拆分</summary><div class="edit-body"><select class="sel" id="editCropMode" aria-label="裁切方式"><option value="crop">矩形裁切</option><option value="shape">不规则裁切</option><option value="split">素材页拆分</option></select><button class="tool" id="editCropGo">开始裁切</button><button class="tool edit-generated" id="editUncrop" hidden>取消裁切</button></div></details>
    <details class="edit-section" data-edit-image><summary>贴纸效果</summary><div class="edit-body">
-    <select class="sel fx-pick" data-fx="sticker" aria-label="白边贴纸"><option value="">白边贴纸</option><option value="thin">白边贴纸 · 细</option><option value="mid">白边贴纸 · 中</option><option value="thick">白边贴纸 · 粗</option></select>
-    <select class="sel fx-pick" data-fx="torn" aria-label="撕边"><option value="">撕边</option><option value="thin">撕边 · 细</option><option value="mid">撕边 · 中</option><option value="thick">撕边 · 粗</option></select>
-    <button class="tool" data-op="tape">制作胶带</button>
+    <div class="f fx-row"><span class="fx-lbl">白边</span><select class="sel fx-pick" data-fx="sticker" aria-label="白边"><option value="">无</option><option value="thin">细</option><option value="mid">中</option><option value="thick">粗</option></select></div>
+    <div class="f fx-row"><span class="fx-lbl">撕边</span><select class="sel fx-pick" data-fx="torn" aria-label="撕边"><option value="">无</option><option value="thin">细</option><option value="mid">中</option><option value="thick">粗</option></select></div>
+    <button class="tool" data-op="tape">制作胶带…</button>
    </div></details>
    <details class="edit-section" id="editPhotoSection"><summary>相框与纹理</summary><div class="edit-body edit-generated" id="editPhoto"></div></details>
    <details class="edit-section" id="editColorSection"><summary>调色</summary><div class="edit-body" id="editColor"></div></details>
@@ -785,10 +785,15 @@ function sticker(c,w){const o0=STICK_W[w||stickW]||STICK_W.mid,base=Math.sqrt(c.
  ox.save();ox.shadowColor='rgba(70,45,20,.16)';ox.shadowBlur=sh*1.6;ox.shadowOffsetY=sh*.55;ox.drawImage(ring,0,0);ox.restore();
  ox.save();ox.shadowColor='rgba(70,45,20,.22)';ox.shadowBlur=sh*.35;ox.shadowOffsetY=sh*.12;ox.drawImage(ring,0,0);ox.restore();
  ox.drawImage(c,pad,pad);return trim(o,2)}
-// 贴纸效果下拉:显示选中图片现在用的档位;没做过就显示效果名
-function paintFxW(){const it=typeof sel==='function'?sel():null;document.querySelectorAll('.fx-pick').forEach(e=>e.value=it&&it.fx===e.dataset.fx&&it.fxW?it.fxW:'')}
-async function setFxW(fx,w){if(!w)return paintFxW();fxW[fx]=w;if(fx==='sticker')stickW=w;try{localStorage.setItem(fx==='sticker'?'jw-sticker-w2':'jw-torn-w',w)}catch(e){}
- const it=sel();if(!it||it.type!=='image'||it.locked){paintFxW();return toast('先点选一张图片')}await runOp(fx);paintFxW()}
+// 白边、撕边:各自 无/细/中/粗。两种效果都从「加效果之前的图」重新算,所以可以随时改回「无」
+function paintFxW(){const it=typeof sel==='function'?sel():null;document.querySelectorAll('.fx-pick').forEach(e=>e.value=it?.fxs?.[e.dataset.fx]||'')}
+async function applyFx(it){const base=it.fxSrc&&assets[it.fxSrc]?it.fxSrc:it.asset,st={...(it.fxs||{})};
+ if(!st.sticker&&!st.torn){if(base!==it.asset){commit();const a=assets[it.asset],b=assets[base];it.w=it.w*b.w/a.w;it.h=it.h*b.h/a.h;it.asset=base;renderItems()}it.fxs=null;it.fxSrc=null;save();return}
+ let c=await toCanvas(assets[base]);if(st.sticker)c=sticker(c,st.sticker);if(st.torn)c=torn(c,TORN_W[st.torn]);
+ await replaceAsset(it,c,'');it.fxSrc=base;it.fxs=st;save()}
+async function setFxW(fx,w){const it=sel();if(!it||it.type!=='image'||it.locked){paintFxW();return toast('先点选一张图片')}
+ if(w){fxW[fx]=w;if(fx==='sticker')stickW=w;try{localStorage.setItem(fx==='sticker'?'jw-sticker-w2':'jw-torn-w',w)}catch(e){}}
+ it.fxs={...(it.fxs||{}),[fx]:w||''};await applyFx(it);paintFxW()}
 function jag(R,x0,y0,x1,y1,amp,step){const pts=[],L=Math.hypot(x1-x0,y1-y0),n=Math.max(2,Math.round(L/step)),nx=-(y1-y0)/L,ny=(x1-x0)/L;
  for(let i=0;i<n;i++){const t=i/n,j=(R()-.5)*2*amp;pts.push([x0+(x1-x0)*t+nx*j,y0+(y1-y0)*t+ny*j])}return pts}
 function tornPath(R,W,H,inset,amp,step){const p=[...jag(R,inset,inset,W-inset,inset,amp,step),...jag(R,W-inset,inset,W-inset,H-inset,amp,step),...jag(R,W-inset,H-inset,inset,H-inset,amp,step),...jag(R,inset,H-inset,inset,inset,amp,step)];
@@ -804,7 +809,7 @@ function tapeFrom(c){const W=c.width,H=c.height,th=Math.round(Math.min(H*.32,W/4
 function tone(c,k){const f={warm:'sepia(.2) saturate(1.1) brightness(1.03)',faded:'contrast(.86) brightness(1.07) saturate(.82)',salt:'saturate(.58) brightness(1.1) contrast(.9)',retro:'sepia(.38) contrast(.94) saturate(.9) brightness(.98)'}[k];
  const o=cv(c.width,c.height),x=o.getContext('2d');x.filter=f;x.drawImage(c,0,0);
  if(x.filter==='none'||!('filter' in x))toast('这个浏览器不支持调色,换 Chrome 试试');return o}
-async function replaceAsset(it,c,suffix){const old=assets[it.asset];it.fx=null;it.fxBase=null;it.inkBase=null;it.ink=null;const a=await addAsset(c.toDataURL('image/png'),{name:old.name,source:'edit',hidden:true});
+async function replaceAsset(it,c,suffix){const old=assets[it.asset];it.fxs=null;it.fxSrc=null;it.inkBase=null;it.ink=null;const a=await addAsset(c.toDataURL('image/png'),{name:old.name,source:'edit',hidden:true});
  commit();it.w=it.w*a.w/old.w;it.h=it.h*a.h/old.h;it.asset=a.id;renderItems();if(suffix)toast(suffix)}
 async function runOp(op){const it=sel();
  if(it&&it.type==='text'&&!it.locked){
@@ -815,11 +820,10 @@ async function runOp(op){const it=sel();
  if(op==='reset'){if(it.asset===it.orig)return toast('已经是原图');const o=assets[it.orig],c=assets[it.asset];commit();it.w=it.w*o.w/c.w;it.h=it.h*o.h/c.h;it.asset=it.orig;return renderItems()}
  const c=await toCanvas(assets[it.asset]);
  if(op==='key')return replaceAsset(it,keyOut(c,+$('#tol').value),'背景已移除');
- if(op==='sticker'||op==='torn'){// 已经做过同一种效果时,从做之前的图重新做,换粗细不会叠加
-  const same=it.fx===op&&it.fxBase&&assets[it.fxBase],baseId=same?it.fxBase:it.asset,bc=baseId===it.asset?c:await toCanvas(assets[baseId]);
-  await replaceAsset(it,op==='sticker'?sticker(bc,fxW.sticker):torn(bc,TORN_W[fxW.torn]),'');it.fx=op;it.fxBase=baseId;it.fxW=fxW[op];save();return}
+ if(op==='sticker'||op==='torn'){// 快捷按钮:没做过就按上次的粗细加上
+  it.fxs={...(it.fxs||{}),[op]:it.fxs?.[op]||fxW[op]||'thin'};return applyFx(it)}
  if(op==='shape')return openShape(it,c);
- if(op==='tape'){const t=tapeFrom(c);const a=await addAsset(t.toDataURL('image/png'),{name:it.name+' 胶带',source:'tool',cat:'tool'});drawerRender();addItem(a,it.x,it.y+it.h/2,{w:Math.min(80,it.w)});return toast('做成了一条胶带,也存进了「工具生成」')}
+ if(op==='tape')return window.WorkbenchExtras.openTapeMaker(it,c);
  if(op.startsWith('tone:'))return replaceAsset(it,tone(c,op.slice(5)),'')
  if(op==='crop')return openSheet(assets[it.asset].src,it.name,'crop',it)
  if(op==='split')return openSheet(assets[it.asset].src,it.name,'split',it)}
@@ -1795,16 +1799,17 @@ async function init(){
 }
 window.workbenchReady=init();
 </script>
-<script src="ui-kit.js?v=33"></script>
-<script src="workbench-extras.js?v=33"></script>
-<script src="workbench-tools.js?v=33"></script>
-<script src="workbench-editor.js?v=33"></script>
-<script src="material-library.js?v=33"></script>
-<script src="workbench-v26.js?v=33"></script>
-<script src="open-materials.js?v=33"></script>
-<script src="workbench-v27.js?v=33"></script>
-<script src="workbench-v28.js?v=33"></script>
-<script src="workbench-v29.js?v=33"></script>
-<script src="workbench-v31.js?v=33"></script>
+<script src="ui-kit.js?v=34"></script>
+<script src="workbench-extras.js?v=34"></script>
+<script src="workbench-tools.js?v=34"></script>
+<script src="workbench-editor.js?v=34"></script>
+<script src="material-library.js?v=34"></script>
+<script src="workbench-v26.js?v=34"></script>
+<script src="open-materials.js?v=34"></script>
+<script src="workbench-v27.js?v=34"></script>
+<script src="workbench-v28.js?v=34"></script>
+<script src="workbench-v29.js?v=34"></script>
+<script src="workbench-v31.js?v=34"></script>
+<script src="workbench-v34.js?v=34"></script>
 </body>
 </html>

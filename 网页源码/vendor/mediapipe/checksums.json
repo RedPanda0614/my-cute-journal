@@ -1,9 +1,0 @@
-{
-  "LICENSE": "8707eef0533987efc5b155d64761eeb6e20793f50b9bd1a68dad1cf4719d0ed8",
-  "person_multiclass.tflite": "c6748b1253a99067ef71f7e26ca71096cd449baefa8f101900ea23016507e0e0",
-  "vision_bundle.js": "a8c95ebecb9efca4ef79ce32f7b77fa5cb61b809e7e21a2f3d792d181ca0b822",
-  "SOURCE.md": "7767518199315603cee9e5da1feb8b6ea73832e801cf38991f855f4b7215fb9a",
-  "package.json": "8a1a3ac021e8b558a4f204fb69ec4b8a8926ae57e4b9807e2fa9c7545232a232",
-  "wasm/vision_wasm_internal.wasm": "f5bd25147ac89d506074293ce2675969b10e827180db95a0d9689c2ed80764ab",
-  "wasm/vision_wasm_internal.js": "f2b9c17131ea79716ec6bf07b117a087b2749a6f8a1e2f1f2e77a9382092db5b"
-}

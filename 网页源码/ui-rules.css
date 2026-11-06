@@ -84,3 +84,42 @@
 #dtabs{display:flex!important;flex-direction:column!important;align-items:stretch!important;padding:12px 12px 0!important;border-bottom:1px solid var(--line)}
 #dtabs>.row-title,#dtabs>#catChips,#dtabs>#setChips{width:100%;box-sizing:border-box}
 #dtabs>#tabList{display:none!important}
+
+/* 隐藏的东西一定要隐藏(上面的 display 规则不能盖过 hidden) */
+[hidden]{display:none!important}
+
+/* ---------- 9. 表单行:白边 / 撕边 这类「标签 | 下拉」 ---------- */
+.pn[data-pane="tidy"] .edit-body .fx-row{display:grid!important;grid-template-columns:var(--lbl-w) minmax(0,1fr);align-items:center;gap:6px;width:100%}
+.pn[data-pane="tidy"] .fx-row .fx-lbl{font-size:12px;color:var(--soft)}
+
+/* ---------- 10. 弹窗里的控件和侧栏同一套:标签 | 控件 | 数值 ---------- */
+#mbox .tcolor{display:grid!important;grid-template-columns:var(--lbl-w) 38px minmax(0,1fr);align-items:center;gap:6px}
+#mbox .tcolor .tc-lbl{font-size:12px;color:var(--soft)}
+#mbox .tcolor input[type=color]{width:38px;height:28px;padding:0;border:1px solid var(--line);border-radius:var(--ctl-r)}
+#mbox .tcolor .cf-hex{height:28px;font-size:12px;font-family:ui-monospace,Menlo,monospace;padding:3px 6px;min-width:0}
+#mbox .tcolor .tc-pre{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px}
+#mbox .tcolor .swatch{width:18px;height:18px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px var(--line);cursor:pointer}
+#mbox .tcolor .swatch.on{box-shadow:0 0 0 2px var(--accent)}
+#mbox .mrow,#mbox .wb-controls>label{display:grid!important;grid-template-columns:var(--lbl-w) minmax(0,1fr) 3.6em;align-items:center;gap:6px;font-size:12px;margin:0}
+#mbox .mrow>span:first-child{color:var(--soft)}
+#mbox .mrow output{text-align:right;font-size:11px;color:var(--soft)}
+#mbox .mrow .seg{margin:0;grid-column:2/4}
+#mbox .wb-controls>label input[type=range]{grid-column:2/4;width:100%}
+
+/* 制作胶带 */
+.tape-maker{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;margin-top:8px}
+.tm-src{position:relative;flex:none;overflow:hidden;background:repeating-conic-gradient(#efe6d4 0 25%,#f8f3e8 0 50%) 0 0/16px 16px;border:1px solid var(--line);border-radius:var(--ctl-r)}
+.tm-src canvas{display:block}
+.tm-band{position:absolute;border:2px solid var(--accent);background:rgba(200,100,75,.12);box-shadow:0 0 0 9999px rgba(40,30,20,.28);cursor:move;box-sizing:border-box}
+.tm-band i{position:absolute;background:var(--accent);border-radius:2px}
+.tm-band i[data-h=t],.tm-band i[data-h=b]{left:50%;width:26px;height:6px;margin-left:-13px;cursor:ns-resize}
+.tm-band i[data-h=t]{top:-4px}.tm-band i[data-h=b]{bottom:-4px}
+.tm-band i[data-h=l],.tm-band i[data-h=r]{top:50%;width:6px;height:26px;margin-top:-13px;cursor:ew-resize}
+.tm-band i[data-h=l]{left:-4px}.tm-band i[data-h=r]{right:-4px}
+.tm-side{flex:1;min-width:240px;display:flex;flex-direction:column;gap:8px}
+.tm-prev{margin-top:4px;padding:16px 10px;border:1px dashed var(--line);border-radius:var(--ctl-r);background:#f6efe1;display:flex;justify-content:center}
+.tm-prev canvas{max-width:100%;filter:drop-shadow(0 1px 1.5px rgba(60,40,20,.25))}
+/* 所有滑块行一样高、一样间距(相框与纹理、调色、变换…) */
+.pn[data-pane="tidy"] .edit-slider,.pn[data-pane="tidy"] .edit-body .f:has(input[type=range]){min-height:26px}
+.photo-inline{display:flex;flex-direction:column;gap:6px}
+#editColor{display:flex;flex-direction:column;gap:6px}
