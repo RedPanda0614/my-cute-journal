@@ -17,45 +17,8 @@
  migratePaper();
 
  /* ================= P0-1 自动保存到「作品」文件夹 + 备份提醒 ================= */
- const SERVER=/^https?:$/.test(location.protocol)&&/^(127\.0\.0\.1|localhost)$/.test(location.hostname);
- let serverOk=false,dirty=false,lastServerSave=null,saving=false,saveTimer=null,lastBytes=0;
- const status=el('button','tag save-status');status.id='saveStatus';status.type='button';
- $('#projectMenu')?.before(status);
- function paintStatus(){
-  if(serverOk){status.textContent=saving?'正在存到作品文件夹…':lastServerSave?`已存到作品文件夹 ${lastServerSave}`:'作品会自动存到文件夹';status.classList.toggle('warn',false);status.title='作品自动存在「03 手帐工作台/作品/自动保存.json」,每天另留一份备份';return}
-  const last=ls.get('jw-last-backup',0),days=last?Math.floor((Date.now()-last)/864e5):null;
-  status.textContent=last?(days<1?'今天已备份':`${days} 天没备份`):'只存在浏览器里';status.classList.toggle('warn',!last||days>=1);
-  status.title='双击打开时作品只存在这个浏览器里。点这里下载一份备份文件。用「启动工作台.command」打开,会自动存进文件夹。'}
- status.onclick=()=>{if(serverOk)return toast('作品在「03 手帐工作台/作品/」里,每天有一份备份');downloadBackup()};
- function downloadBackup(){saveProject();ls.set('jw-last-backup',Date.now());hideBanner();paintStatus()}
- const oldSaveProject=saveProject;saveProject=function(){const r=oldSaveProject.apply(this,arguments);ls.set('jw-last-backup',Date.now());paintStatus();return r};
- async function pushToServer(force){if(!serverOk||saving||!dirty&&!force)return;saving=true;dirty=false;paintStatus();
-  try{const body=JSON.stringify(projectData());lastBytes=body.length;const r=await fetch('/api/autosave',{method:'POST',headers:{'Content-Type':'application/json'},body});const j=await r.json();if(!j.ok)throw new Error(j.error||'保存失败');lastServerSave=j.time}
-  catch(e){dirty=true;toast('存到作品文件夹失败:'+e.message+'。作品还在浏览器里。')}
-  saving=false;paintStatus()}
- const oldSave=save;save=function(){const r=oldSave.apply(this,arguments);dirty=true;if(serverOk){clearTimeout(saveTimer);saveTimer=setTimeout(()=>pushToServer(),4000)}else checkReminder();return r};
- document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')pushToServer()});
- // 双击打开时:一天提醒一次下载备份
- const banner=el('div','backup-banner');banner.hidden=true;document.body.append(banner);
- function hideBanner(){banner.hidden=true}
- function showBanner(msg){banner.innerHTML=`<span>${msg}</span><button class="cb" id="bnBackup">下载备份</button><button class="cb" id="bnLater">明天再说</button>`;banner.hidden=false;
-  $('#bnBackup').onclick=downloadBackup;$('#bnLater').onclick=()=>{ls.set('jw-backup-snooze',Date.now());hideBanner()}}
- let reminded=false;
- function checkReminder(){if(serverOk||reminded||!hasContent())return;const last=ls.get('jw-last-backup',0),snooze=ls.get('jw-backup-snooze',0);
-  if(Date.now()-Math.max(last,snooze)<864e5)return;reminded=true;setTimeout(()=>{if(!serverOk)showBanner('作品现在只存在这个浏览器里。换浏览器、清缓存,作品就没了。下载一份备份放在文件夹里更保险。')},90000)}
- async function checkStorage(){try{const e=await navigator.storage?.estimate?.();if(!e||!e.quota)return;const r=e.usage/e.quota;if(r>.8)showBanner(`浏览器存储已经用了 ${Math.round(r*100)}%,快满了。先下载一份备份,再删掉不用的上传素材。`)}catch(e){}}
- (async()=>{
-  if(SERVER){try{const r=await fetch('/api/ping',{cache:'no-store'});serverOk=(await r.json()).ok}catch(e){serverOk=false}}
-  paintStatus();
-  if(serverOk){
-   // 浏览器里是空的,但文件夹里有自动保存 → 问要不要恢复
-   if(!hasContent()){try{const r=await fetch('/api/autosave',{cache:'no-store'});if(r.ok){const p=await r.json();if(p.pages?.some(pg=>pg.items?.length))askRestore(p)}}catch(e){}}
-   else pushToServer(true);
-  }else{checkReminder();checkStorage()}
- })();
- function askRestore(p){$('#mbox').innerHTML=`<h3>找到文件夹里的作品</h3><p class="mini">浏览器里是空的,但「作品/自动保存.json」里有 ${p.pages.length} 页。要恢复吗?</p><div class="row" style="justify-content:flex-end"><button class="tag" id="rsNo">不用</button><button class="tag red" id="rsYes">恢复</button></div>`;
-  $('#rsNo').onclick=closeModal;$('#rsYes').onclick=async()=>{closeModal();commit();await applyProject(p);selId=null;syncTop();layout();drawerRender();pagebar();save();toast('已从作品文件夹恢复')};openModal()}
-
+ // v35 保存状态与磁盘恢复由 workbench-storage.js 负责。
+ function downloadBackup(){saveProject()}
  /* ================= P0-2 项目和作品库合成「作品」 ================= */
  (function mergeMenus(){const m=$('#projectMenu');if(!m)return;m.querySelector('summary').textContent='作品 ▾';
   const d=m.querySelector('.top-dropdown');d.innerHTML='';
@@ -93,7 +56,7 @@
  /* ================= P1 素材栏简化 ================= */
  let recentMode=false;
  const ML=window.MaterialLibrary;
- if(ML){const oldMatch=ML.matches;ML.matches=function(a){if(recentMode)return !a.hidden&&recent().includes(a.id);return oldMatch.apply(this,arguments)}}
+ if(ML){const oldMatch=ML.matches;ML.matches=function(a){return oldMatch.apply(this,arguments)&&(!recentMode||recent().includes(a.id))}}
  window.sortAssetList=list=>{if(recentMode){const r=recent();list.sort((a,b)=>r.indexOf(a.id)-r.indexOf(b.id))}};
  const chips=el('div','cat-chips');chips.id='catChips';
  const filterBtn=el('button','cb filter-toggle','筛选');filterBtn.id='bFilters';filterBtn.type='button';filterBtn.title='按风格、来源、标签、收纳夹、颜色筛选';
@@ -294,7 +257,7 @@
  TEMPLATES.filter(t=>t.id!=='blank').forEach(t=>{const b=el('button','cb',t.name);b.type='button';b.onclick=()=>applyTemplate(t.id,'here');emptyHint.querySelector('.row').append(b)});
  function paintEmpty(){emptyHint.hidden=state.items.length>0}
  // 双击照片框 = 换照片
- $('#items').addEventListener('dblclick',e=>{const row=e.target.closest('.item');const it=row&&state.items.find(i=>i.id===row.dataset.id);if(it?.photoPlaceholder||it?.photoSpec){setTimeout(()=>$('#wbPhotoReplace')?.click(),30)}if(it?.card){setPane('tidy')}});
+ // 双击由 workbench-extras.js 统一分发。
 
  /* ================= P1 对齐工具 ================= */
  function bbox(it){const r=it.rot*Math.PI/180,c=Math.abs(Math.cos(r)),s=Math.abs(Math.sin(r)),w=it.w*c+it.h*s,h=it.w*s+it.h*c;return{l:it.x-w/2,r:it.x+w/2,t:it.y-h/2,b:it.y+h/2,cx:it.x,cy:it.y,w,h}}

@@ -123,3 +123,47 @@
 .pn[data-pane="tidy"] .edit-slider,.pn[data-pane="tidy"] .edit-body .f:has(input[type=range]){min-height:26px}
 .photo-inline{display:flex;flex-direction:column;gap:6px}
 #editColor{display:flex;flex-direction:column;gap:6px}
+/* v35: 收纳不挤占素材；新增界面沿用同一套控件。 */
+#catChips,#setChips{flex-wrap:nowrap;min-height:39px;overflow:hidden;gap:6px}
+#catChips .chip:not(.chip-more):not(.chip-add),#setChips .chip:not(.chip-more):not(.chip-add){max-width:45%;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
+.chip-more,.chip-add{flex-shrink:0}
+.chip-browser{display:flex;flex-wrap:wrap;gap:6px;max-height:55vh;overflow:auto;margin:12px 0}
+.chip-browser .chip{max-width:100%!important}
+.library-actions{padding:4px 12px;flex-shrink:0}
+#compareTray{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;align-items:center;padding:0 12px 6px;font-size:12px}
+.compare-picked{outline:2px solid var(--accent);outline-offset:-2px}
+.candidate-grid,.element-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;max-height:65vh;overflow:auto;margin:12px 0}
+.candidate-card,.element-card{display:flex;flex-direction:column;gap:6px;border:1px solid var(--line);padding:10px;border-radius:4px;min-width:0}
+.candidate-card>img{width:100%;height:240px;object-fit:contain;background:#f6efe1}
+.element-card>img{width:100%;height:160px;object-fit:contain;background:#f6efe1}
+.candidate-card small{font-size:11px;color:var(--soft)}
+#selectionBounds{position:absolute;pointer-events:none;border:1.5px dashed var(--accent);box-sizing:border-box;z-index:10}
+#groupEntry,#saveElement{margin:6px 0}
+#multiEdit .mrow{display:grid;grid-template-columns:4.5em minmax(0,1fr) 2em;align-items:center;gap:6px;font-size:12px}
+#multiEdit .mrow input{height:30px;min-width:0;width:100%}
+#multiEdit .mrow output{text-align:right;color:var(--soft)}
+#multiEdit .edit-body{display:flex;flex-direction:column;gap:6px}
+#photoWorkflow,#reframeBar{margin-bottom:6px}
+#photoFillHint{margin:4px 12px}
+.reframing .item.selected{cursor:move;outline:2px dashed var(--accent)}
+.reframing .item .h,.reframing .h-stem{display:none}
+.disk-list{display:flex;flex-direction:column;gap:8px;margin:12px 0;max-height:58vh;overflow:auto}
+.disk-list .edit-body{display:flex;flex-direction:column;gap:6px;padding:8px}
+.disk-list select{max-width:100%;width:100%}
+.save-status{max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}
+.export-controls{display:flex;flex-direction:column;gap:6px}
+#mbox .export-controls .mrow{grid-template-columns:5em minmax(0,1fr)}
+.export-preview{display:flex;gap:12px;margin:12px 0;background:#e9e1d3;border:1px solid var(--line);padding:12px;min-height:240px;max-height:58vh}
+.export-pages{display:flex;flex-direction:column;gap:6px;width:85px;flex-shrink:0;overflow:auto}
+.export-sheet{flex:1;display:flex;justify-content:center;min-width:0}
+.export-sheet img{max-width:100%;max-height:54vh;object-fit:contain;box-shadow:0 2px 6px #49382d22}
+@media(max-width:600px){.save-status{max-width:150px}.candidate-grid,.element-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.candidate-card>img{height:150px}.export-preview{padding:6px}.export-pages{width:60px}.library-actions{padding:4px 8px}}
+#mbox:has(.export-preview){display:flex;flex-direction:column;height:min(800px,90dvh);overflow:hidden}
+#mbox:has(.export-preview)>h3,#mbox:has(.export-preview)>.export-controls,#mbox:has(.export-preview)>.mini,#mbox:has(.export-preview)>.btn-grid{flex-shrink:0}
+#mbox .export-preview{flex:1;min-height:100px;max-height:none;overflow:hidden}
+#mbox .export-sheet img{width:100%;height:100%;max-height:100%;object-fit:contain;min-height:0}
+/* tool 是共用组件，弹窗、素材工具和侧栏使用同一尺寸及居中对齐。 */
+.tool{display:flex;align-items:center;justify-content:center;box-sizing:border-box;width:100%;min-height:var(--ctl-h);padding:4px 8px;border:1px solid var(--line);border-radius:var(--ctl-r);background:#fffdf7;color:var(--ink);font:inherit;font-size:12.5px;line-height:1.3;text-align:center;cursor:pointer;white-space:normal}
+.tool:hover:not(:disabled){border-color:var(--accent)}
+.tool.on{background:#f6dcc8;border-color:#e4b496}
+.tool:disabled{opacity:.45;cursor:default}

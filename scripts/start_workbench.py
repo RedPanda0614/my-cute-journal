@@ -1,135 +1,180 @@
 #!/usr/bin/env python3
-"""在本机启动工作台,并把作品自动存进「作品」文件夹。
-
-- 打开 http://127.0.0.1:8765/网页源码/index.html
-- 网页每次改动后会把整个作品发过来,存成 作品/自动保存.json
-- 每天另存一份到 作品/备份/年-月-日.json,保留最近 30 天
-- 只接受本机(127.0.0.1)的请求,不对外开放
-"""
-import datetime
+"""仅在本机运行；每本作品独立保存，保留最近 40 个不同时间点。"""
+import argparse
+import datetime as dt
 import functools
+import hashlib
 import http.server
 import json
 import os
 import pathlib
+import re
 import threading
-import urllib.error
+import urllib.parse
 import urllib.request
 import webbrowser
 
-root = pathlib.Path(__file__).resolve().parents[1]
-works = root / "作品"
-backups = works / "备份"
-port = 8765
-path = "/%E7%BD%91%E9%A1%B5%E6%BA%90%E7%A0%81/index.html"
-url = f"http://127.0.0.1:{port}{path}"
-MAX_BODY = 512 * 1024 * 1024  # 作品里有图片,允许大一点
-KEEP_DAYS = 30
+ROOT = pathlib.Path(__file__).resolve().parents[1]
+MAX_BODY = 512 * 1024 * 1024
+KEEP_HISTORY = 40
+WRITE_LOCK = threading.RLock()
 
 
-def write_atomic(target: pathlib.Path, data: bytes) -> None:
+def write_atomic(target, data):
     target.parent.mkdir(parents=True, exist_ok=True)
-    tmp = target.with_suffix(target.suffix + ".tmp")
-    tmp.write_bytes(data)
+    tmp = target.with_suffix(target.suffix + '.tmp')
+    with tmp.open('wb') as f:
+        f.write(data)
+        f.flush()
+        os.fsync(f.fileno())
     os.replace(tmp, target)
 
 
-def prune_backups() -> None:
-    files = sorted(backups.glob("*.json"))
-    for old in files[:-KEEP_DAYS]:
-        try:
-            old.unlink()
-        except OSError:
-            pass
+def work_key(project):
+    # 用户名称不参与路径，防止改名、同名和路径字符影响文件。
+    identity = str((project.get('workInfo') or {}).get('id') or project.get('draftId') or 'legacy-draft')
+    return hashlib.sha256(identity.encode()).hexdigest()[:24]
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
-    # 网页文件每次都向本地服务确认一下是不是最新,改了代码刷新就能看到
-    def send_header(self, keyword, value):
-        if keyword.lower() == "cache-control":
-            self._cache_set = True
-        super().send_header(keyword, value)
+    works = ROOT / '作品'
 
     def end_headers(self):
-        if not getattr(self, "_cache_set", False):
-            super().send_header("Cache-Control", "no-cache")
-        self._cache_set = False
+        self.send_header('Cache-Control', 'no-store' if self.path.startswith('/api/') else 'no-cache')
         super().end_headers()
 
-    def log_message(self, fmt, *args):  # 安静一点,只打印保存信息
-        if "/api/" in (self.path or ""):
-            return
-        super().log_message(fmt, *args)
+    def log_message(self, fmt, *args):
+        if '/api/' not in self.path:
+            super().log_message(fmt, *args)
 
-    def _json(self, code, obj):
-        body = json.dumps(obj, ensure_ascii=False).encode("utf-8")
+    def reply(self, code, obj):
+        data = json.dumps(obj, ensure_ascii=False).encode()
         self.send_response(code)
-        self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.send_header("Content-Length", str(len(body)))
-        self.send_header("Cache-Control", "no-store")
+        self.send_header('Content-Type', 'application/json; charset=utf-8')
+        self.send_header('Content-Length', str(len(data)))
         self.end_headers()
-        self.wfile.write(body)
+        self.wfile.write(data)
+
+    def read_json(self, path):
+        return json.loads(path.read_bytes())
+
+    def listing(self):
+        result = []
+        for path in (self.works / '项目').glob('*.json'):
+            try:
+                p = self.read_json(path)
+                info = p.get('workInfo') or {}
+                history = sorted((self.works / '历史' / path.stem).glob('*.json'), reverse=True)
+                result.append(dict(key=path.stem, name=info.get('name') or '未命名草稿',
+                                   id=info.get('id') or p.get('draftId'), updated=path.stat().st_mtime * 1000,
+                                   pages=len(p.get('pages', [])), history=[f.stem for f in history]))
+            except (OSError, ValueError):
+                continue
+        return sorted(result, key=lambda r: r['updated'], reverse=True)
 
     def do_GET(self):
-        if self.path == "/api/ping":
-            return self._json(200, {"ok": True, "folder": str(works)})
-        if self.path == "/api/autosave":
-            f = works / "自动保存.json"
-            if not f.exists():
-                return self._json(404, {"ok": False})
-            data = f.read_bytes()
-            self.send_response(200)
-            self.send_header("Content-Type", "application/json; charset=utf-8")
-            self.send_header("Content-Length", str(len(data)))
-            self.send_header("Cache-Control", "no-store")
-            self.end_headers()
-            self.wfile.write(data)
-            return
+        route = urllib.parse.urlsplit(self.path)
+        try:
+            if route.path == '/api/ping':
+                return self.reply(200, dict(ok=True, folder=str(self.works), version=35))
+            if route.path == '/api/works':
+                return self.reply(200, dict(ok=True, works=self.listing()))
+            if route.path == '/api/work':
+                q = urllib.parse.parse_qs(route.query)
+                key = q.get('key', [''])[0]
+                revision = q.get('revision', [''])[0]
+                if not re.fullmatch(r'[a-f0-9]{24}', key):
+                    return self.reply(400, dict(ok=False, error='作品编号无效'))
+                if revision and revision != '0000-legacy' and not re.fullmatch(r'[0-9T-]+', revision):
+                    return self.reply(400, dict(ok=False, error='历史编号无效'))
+                target = self.works / '历史' / key / (revision + '.json') if revision else self.works / '项目' / (key + '.json')
+                return self.reply(200, self.read_json(target))
+            if route.path == '/api/autosave':
+                return self.reply(200, self.read_json(self.works / '自动保存.json'))
+        except FileNotFoundError:
+            return self.reply(404, dict(ok=False, error='没有找到保存文件'))
+        except (OSError, ValueError):
+            return self.reply(500, dict(ok=False, error='保存文件暂时无法读取'))
         return super().do_GET()
 
     def do_POST(self):
-        if self.path != "/api/autosave":
-            return self._json(404, {"ok": False})
-        if self.client_address[0] not in ("127.0.0.1", "::1"):
-            return self._json(403, {"ok": False})
-        size = int(self.headers.get("Content-Length") or 0)
-        if size <= 0 or size > MAX_BODY:
-            return self._json(413, {"ok": False, "error": "作品太大"})
-        data = self.rfile.read(size)
+        if self.path != '/api/autosave':
+            return self.reply(404, dict(ok=False))
+        if self.client_address[0] not in ('127.0.0.1', '::1'):
+            return self.reply(403, dict(ok=False))
         try:
-            json.loads(data)  # 确认是完整的作品文件再写
-        except ValueError:
-            return self._json(400, {"ok": False, "error": "数据不完整"})
-        write_atomic(works / "自动保存.json", data)
-        today = datetime.date.today().isoformat()
-        write_atomic(backups / f"{today}.json", data)
-        prune_backups()
-        stamp = datetime.datetime.now().strftime("%H:%M")
-        print(f"{stamp} 已自动保存到 作品/自动保存.json ({size // 1024} KB)")
-        return self._json(200, {"ok": True, "time": stamp, "bytes": size})
+            size = int(self.headers.get('Content-Length') or 0)
+            if not 0 < size <= MAX_BODY:
+                return self.reply(413, dict(ok=False, error='作品大小超限'))
+            data = self.rfile.read(size)
+            p = json.loads(data)
+            if not isinstance(p, dict) or not isinstance(p.get('pages'), list):
+                return self.reply(400, dict(ok=False, error='不是完整的作品'))
+            with WRITE_LOCK:
+                key = work_key(p)
+                target = self.works / '项目' / (key + '.json')
+                history = self.works / '历史' / key
+                # 旧版自动保存也先迁移，绝不在第一次升级时直接覆盖唯一副本。
+                legacy = self.works / '自动保存.json'
+                if legacy.exists() and not any((self.works / '项目').glob('*.json')):
+                    old = legacy.read_bytes()
+                    try:
+                        old_key = work_key(json.loads(old))
+                        write_atomic(self.works / '项目' / (old_key + '.json'), old)
+                        write_atomic(self.works / '历史' / old_key / '0000-legacy.json', old)
+                    except ValueError:
+                        write_atomic(self.works / '升级前自动保存.json', old)
+                if not target.exists() or target.read_bytes() != data:
+                    stamp = dt.datetime.now().strftime('%Y-%m-%dT%H-%M-%S-%f')
+                    write_atomic(history / (stamp + '.json'), data)
+                    write_atomic(target, data)
+                    for old in sorted(history.glob('*.json'))[:-KEEP_HISTORY]:
+                        old.unlink()
+                write_atomic(legacy, data)  # 保持旧入口兼容
+            return self.reply(200, dict(ok=True, key=key, time=dt.datetime.now().strftime('%H:%M:%S'), bytes=size))
+        except (ValueError, TypeError):
+            return self.reply(400, dict(ok=False, error='数据不完整'))
+        except OSError:
+            return self.reply(500, dict(ok=False, error='磁盘写入失败，请检查空间和文件夹权限'))
 
 
-try:
-    handler = functools.partial(Handler, directory=str(root))
-    server = http.server.ThreadingHTTPServer(("127.0.0.1", port), handler)
-except OSError:
+class WorkbenchServer(http.server.ThreadingHTTPServer):
+    request_queue_size = 128
+    daemon_threads = True
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--port', type=int, default=8765)
+    parser.add_argument('--works-dir', type=pathlib.Path, default=ROOT / '作品')
+    parser.add_argument('--no-browser', action='store_true')
+    args = parser.parse_args()
+    Handler.works = args.works_dir.resolve()
+    url = f'http://127.0.0.1:{args.port}/%E7%BD%91%E9%A1%B5%E6%BA%90%E7%A0%81/index.html'
     try:
-        with urllib.request.urlopen(url, timeout=2) as response:
-            if response.status != 200:
-                raise RuntimeError("端口被其他程序占用")
-        webbrowser.open(url)
-        print("工作台已打开。")
-    except (OSError, urllib.error.URLError, RuntimeError):
-        print("8765端口被占用，请关闭之前的本地服务后重试。")
-        raise SystemExit(1)
-else:
-    works.mkdir(exist_ok=True)
-    print("工作台正在本地运行，关闭此窗口会停止服务。\n" + url)
-    print("作品会自动存进：" + str(works))
-    threading.Timer(.5, lambda: webbrowser.open(url)).start()
+        server = WorkbenchServer(('127.0.0.1', args.port), functools.partial(Handler, directory=str(ROOT)))
+        server.daemon_threads = True
+    except OSError:
+        try:
+            with urllib.request.urlopen(f'http://127.0.0.1:{args.port}/api/ping', timeout=2) as r:
+                if not json.load(r).get('version', 0) >= 35:
+                    raise ValueError()
+            if not args.no_browser:
+                webbrowser.open(url)
+            return
+        except (OSError, ValueError):
+            raise SystemExit(f'{args.port} 端口被占用或旧服务未关闭，请关闭之前的服务窗口后重新启动。')
+    print('工作台正在本地运行：' + url, flush=True)
+    print('作品会自动存进：' + str(Handler.works), flush=True)
+    if not args.no_browser:
+        threading.Timer(.5, lambda: webbrowser.open(url)).start()
     try:
         server.serve_forever()
     except KeyboardInterrupt:
         pass
     finally:
         server.server_close()
+
+
+if __name__ == '__main__':
+    main()

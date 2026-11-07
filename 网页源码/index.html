@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>手帐工作台</title>
 <link rel="stylesheet" href="fonts/fonts.css">
-<script src="fonts/catalog.js?v=34"></script>
+<script src="fonts/catalog.js?v=35"></script>
 <style>
 :root{--ink:#3b3226;--soft:#7a6a55;--cream:#f8f2e4;--paper:#fbf7ee;--kraft:#d6b78d;--line:#e2d4b8;--accent:#c0583f;--sage:#7f9c80;--mat:#4f866a}
 *{box-sizing:border-box}
@@ -426,9 +426,9 @@ button:disabled{opacity:.45;cursor:default}
 #textEditorPreview.font-error{color:var(--accent);font-size:13px;padding:16px;text-align:center}
 #mbox #textEditorMain{min-height:86px}
 </style>
-<link rel="stylesheet" href="workbench-extras.css?v=34">
-<link rel="stylesheet" href="workbench-v26.css?v=34">
-<link rel="stylesheet" href="ui-rules.css?v=34">
+<link rel="stylesheet" href="workbench-extras.css?v=35">
+<link rel="stylesheet" href="workbench-v26.css?v=35">
+<link rel="stylesheet" href="ui-rules.css?v=35">
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -1196,16 +1196,16 @@ function bindLayerDrag(row,node){row.draggable=true;row.dataset.layerKind=node.k
   [...document.querySelectorAll('#layers [data-layer-id]')].find(el=>el.dataset.layerId===node.id)?.querySelector('.layer-grip')?.focus()};
 }
 function layerPickButton(items){const b=document.createElement('button');b.className='layer-pick';b.type='button';const checked=items.every(it=>layerPicked.has(it.id)),partial=!checked&&items.some(it=>layerPicked.has(it.id));b.textContent=checked?'✓':partial?'−':'';b.setAttribute('aria-label','选择'+(items.length>1?'整组':'图层'));b.setAttribute('aria-pressed',String(checked));
- b.onclick=e=>{e.stopPropagation();items.forEach(it=>checked?layerPicked.delete(it.id):layerPicked.add(it.id));renderLayers()};return b}
+ b.onclick=e=>{e.stopPropagation();items.forEach(it=>checked?layerPicked.delete(it.id):layerPicked.add(it.id));selId=null;renderItems()};return b}
 function renderLayerRow(it,inGroup=false){const a=assets[it.asset];if(!a)return null;const row=document.createElement('div');row.className='layer'+(it.id===selId?' on':'')+(it.hidden?' dim':'')+(inGroup?' in-group':'');
  const grip=document.createElement('span');grip.className='layer-grip';grip.textContent='⠿';grip.tabIndex=0;grip.setAttribute('role','button');grip.setAttribute('aria-label','拖动排序，方向键调整');row.append(grip,layerPickButton([it]));
  const im=document.createElement('img');im.src=a.src;im.alt='';im.draggable=false;row.append(im);const name=document.createElement('span');name.className='nm';name.textContent=it.name;row.append(name);
  for(const [key,label] of [['hide',it.hidden?'显示':'隐藏'],['lock',it.locked?'解锁':'锁定']]){const b=document.createElement('button');b.textContent=label;b.title=label;b.onclick=e=>{e.stopPropagation();commit();it[key==='hide'?'hidden':'locked']=!it[key==='hide'?'hidden':'locked'];if(it.hidden&&selId===it.id)selId=null;renderItems();save()};row.append(b)}
- row.onclick=e=>{if(e.shiftKey){layerPicked.has(it.id)?layerPicked.delete(it.id):layerPicked.add(it.id);renderLayers()}else select(it.id)};bindLayerDrag(row,{kind:'item',id:it.id});return row}
+ row.onclick=e=>{if(e.shiftKey){layerPicked.has(it.id)?layerPicked.delete(it.id):layerPicked.add(it.id);selId=null;renderItems()}else select(it.id)};bindLayerDrag(row,{kind:'item',id:it.id});return row}
 function renderLayers(){const L=$('#layers');if(!L)return;if(layerPageId!==curPage().id){layerPicked.clear();layerPageId=curPage().id}for(const id of layerPicked)if(!state.items.some(it=>it.id===id))layerPicked.delete(id);
  L.replaceChildren();const toolbar=document.createElement('div');toolbar.className='layer-toolbar';const h=document.createElement('h3');h.textContent='图层';toolbar.append(h);
  const group=document.createElement('button');group.className='cb';group.textContent='分组'+(layerPicked.size?' · '+layerPicked.size:'');group.disabled=layerPicked.size<2;group.onclick=createLayerGroup;toolbar.append(group);
- if(layerPicked.size){const clear=document.createElement('button');clear.className='cb';clear.textContent='取消选择';clear.onclick=()=>{layerPicked.clear();renderLayers()};toolbar.append(clear)}L.append(toolbar);
+ if(layerPicked.size){const clear=document.createElement('button');clear.className='cb';clear.textContent='取消选择';clear.onclick=()=>{layerPicked.clear();selId=null;renderItems()};toolbar.append(clear)}L.append(toolbar);
  if(!state.items.length){const empty=document.createElement('div');empty.className='empty';empty.textContent='暂无图层';L.append(empty)}
  const done=new Set();for(const it of [...state.items].reverse()){
   if(!it.groupId){const row=renderLayerRow(it);if(row)L.append(row);continue}if(done.has(it.groupId))continue;done.add(it.groupId);
@@ -1348,7 +1348,7 @@ function startThumbDrag(e,a){e.preventDefault();const gh=$('#ghost'),sx=e.client
  const mv=ev=>{if(!moving&&Math.hypot(ev.clientX-sx,ev.clientY-sy)>5){moving=true;gh.style.display='block'}if(moving){gh.style.left=ev.clientX-40+'px';gh.style.top=ev.clientY-40+'px';const el=document.elementFromPoint(ev.clientX,ev.clientY),tb=el&&el.closest('[data-library-category]');window.MaterialLibrary?.dragHover(el);$$('[data-library-category]').forEach(b=>b.classList.toggle('drop',b===tb&&b.dataset.tab&&b.dataset.tab!=='all'))}};
  const up=ev=>{window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up);gh.style.display='none';window.MaterialLibrary?.endDrag();
   $$('[data-library-category],[data-library-collection],[data-library-tag]').forEach(b=>b.classList.remove('drop'));
-  if(!moving)return addItem(a);const el=document.elementFromPoint(ev.clientX,ev.clientY);
+  if(!moving)return addItem(a);const el=document.elementFromPoint(ev.clientX,ev.clientY);if(window.WorkbenchExtras?.fillPhotoDrop?.(a,el))return;
   const folder=el&&el.closest('[data-library-collection]');if(folder){MaterialLibrary.addToCollection([a.id],folder.dataset.libraryCollection);return}
   const tagChip=el&&el.closest('[data-library-tag]');if(tagChip){const t=tagChip.dataset.libraryTag;if(!a.tags.includes(t)){a.tags=[...a.tags,t];save();drawerRender()}return toast(`加上了标签「${t}」`)}const tb=el&&el.closest('[data-library-category]');if(tb&&tb.dataset.tab&&!['all','fav'].includes(tb.dataset.tab)){if(tb.dataset.tab!==a.cat){a.cat=tb.dataset.tab;save();tabsRender();drawerRender();toast(`放进了「${catName(a.cat)}」`)}return}
   if(el&&el.closest('#materialFavorite')){a.fav=true;save();tabsRender();drawerRender();return toast('收藏了')}
@@ -1761,8 +1761,8 @@ async function init(){
  $$('.fx-pick').forEach(e=>e.onchange=()=>setFxW(e.dataset.fx,e.value));paintFxW();
  $('#bMatteHoles').onclick=()=>{matteHoles=!matteHoles;$('#bMatteHoles').classList.toggle('on',matteHoles);$('#bMatteHoles').setAttribute('aria-pressed',String(matteHoles))};
  $('#bInspector').onclick=()=>{inspectorFolded=!inspectorFolded;syncInspector()};
- new ResizeObserver(()=>{const w=$('#pane').clientWidth;if(w)$('#pane').style.setProperty('--asset-gap',Math.min(16,8+(w-220)*.025)+'px')}).observe($('#pane'));
- new ResizeObserver(()=>{const r=$('#top').getBoundingClientRect();$('#app').style.setProperty('--toolbar-bottom',(r.bottom+6)+'px')}).observe($('#top'));
+ let gapFrame;new ResizeObserver(()=>{cancelAnimationFrame(gapFrame);gapFrame=requestAnimationFrame(()=>{const w=$('#pane').clientWidth;if(w)$('#pane').style.setProperty('--asset-gap',Math.min(16,8+(w-220)*.025)+'px')})}).observe($('#pane'));
+ let topFrame;new ResizeObserver(()=>{cancelAnimationFrame(topFrame);topFrame=requestAnimationFrame(()=>{const r=$('#top').getBoundingClientRect();$('#app').style.setProperty('--toolbar-bottom',(r.bottom+6)+'px')})}).observe($('#top'));
  initTextPreviews();
  $$('#pane [data-op]').forEach(b=>b.onclick=()=>runOp(b.dataset.op));
  $('#bWand').onclick=()=>{const it=sel();if(!wand&&(!it||it.type!=='image'))return toast('先在纸上点选一张图片');setWand(!wand)};
@@ -1799,17 +1799,23 @@ async function init(){
 }
 window.workbenchReady=init();
 </script>
-<script src="ui-kit.js?v=34"></script>
-<script src="workbench-extras.js?v=34"></script>
-<script src="workbench-tools.js?v=34"></script>
-<script src="workbench-editor.js?v=34"></script>
-<script src="material-library.js?v=34"></script>
-<script src="workbench-v26.js?v=34"></script>
-<script src="open-materials.js?v=34"></script>
-<script src="workbench-v27.js?v=34"></script>
-<script src="workbench-v28.js?v=34"></script>
-<script src="workbench-v29.js?v=34"></script>
-<script src="workbench-v31.js?v=34"></script>
-<script src="workbench-v34.js?v=34"></script>
+<script src="ui-kit.js?v=35"></script>
+<script src="workbench-extras.js?v=35"></script>
+<script src="workbench-tools.js?v=35"></script>
+<script src="workbench-editor.js?v=35"></script>
+<script src="material-library.js?v=35"></script>
+<script src="workbench-v26.js?v=35"></script>
+<script src="open-materials.js?v=35"></script>
+<script src="workbench-v27.js?v=35"></script>
+<script src="workbench-v28.js?v=35"></script>
+<script src="workbench-v29.js?v=35"></script>
+<script src="workbench-v31.js?v=35"></script>
+<script src="workbench-v34.js?v=35"></script>
+<script src="workbench-editing.js?v=35"></script>
+<script src="workbench-library.js?v=35"></script>
+<script src="workbench-photos.js?v=35"></script>
+<script src="workbench-export.js?v=35"></script>
+<script src="workbench-storage.js?v=35"></script>
+<script src="material-descriptions.js?v=35"></script>
 </body>
 </html>
