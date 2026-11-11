@@ -39,19 +39,20 @@
     第一行「标签」:自带分类 + 自己建的标签 + 「＋ 新建」
     第二行「素材套」:自带的套 + 自己建的套 + 「＋ 新建」 */
  const addChip=(label,onClick)=>{const b=el('button','chip chip-add','＋ '+label);b.type='button';b.onclick=onClick;return b};
- const tagTitle=el('div','row-title','标签'),setTitle=el('div','row-title grp-sep','素材套');
+ // v37:「＋ 新建」放在每组标题那一行的右边,展开、收起都不会跟着动
+ const titleRow=(cls,text,onAdd)=>{const t=el('div',cls,`<span>${text}</span>`);t.append(addChip('新建',onAdd));return t};
+ const tagTitle=titleRow('row-title','标签',()=>newTag()),setTitle=titleRow('row-title grp-sep','素材套',()=>newSet());
  function paint(){const catRow=$('#catChips'),setRow=$('#setChips');if(!catRow)return;const cur=ML.filters?.collection||'';
   if(catRow.previousElementSibling!==tagTitle)catRow.before(tagTitle);
-  catRow.querySelectorAll('.my-tag,.chip-add').forEach(e=>e.remove());
+  catRow.querySelectorAll('.my-tag,#catChips>.chip-add').forEach(e=>e.remove());
   for(const t of tags()){const n=vis().filter(a=>a.tags?.includes(t)).length,b=el('button','chip my-tag'+(activeTag===t?' on':''),`${esc(t)}<small>${n}</small>`);b.type='button';b.dataset.libraryTag=t;b.title='点一下只看这个标签 · 把素材拖到这里加上标签 · 双击改名或删除';
    b.onclick=()=>{activeTag=activeTag===t?'':t;drawerRender()};b.ondblclick=e=>{e.preventDefault();editTag(t)};catRow.append(b)}
-  catRow.append(addChip('新建',newTag));
   if(!setRow)return;
   if(setRow.previousElementSibling!==setTitle)setRow.before(setTitle);
   setRow.querySelectorAll('.mine,.chip-add').forEach(e=>e.remove());
   for(const c of mine()){const n=vis().filter(a=>a.collectionIds?.includes(c.id)).length,b=el('button','chip mine'+(cur===c.id?' on':''),`${esc(c.name)}<small>${n}</small>`);b.type='button';
    b.dataset.libraryCollection=c.id;b.title='把素材拖到这里放进这套 · 双击改名或删除';b.onclick=()=>setTab(c.id);b.ondblclick=e=>{e.preventDefault();editSet(c)};setRow.append(b)}
-  setRow.append(addChip('新建',newSet))}
+}
  const oldDR=drawerRender;drawerRender=function(){const r=oldDR.apply(this,arguments);paint();return r};
  // 清掉旧版本误建的「收纳夹」,打开作品后也再清一次
  const clean=()=>{if(ML.cleanSetCollections?.())drawerRender()};

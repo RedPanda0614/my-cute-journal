@@ -183,3 +183,16 @@
 .sk-side{flex:1;min-width:260px;display:flex;flex-direction:column;gap:8px}
 .sk-side a{color:var(--accent);font-size:12px;word-break:break-all}
 .sk-prompt{min-height:300px;font-size:12.5px;line-height:1.6;resize:vertical}
+
+/* v37:标题行 = 组名(左) + 「＋ 新建」(右),两组一样 */
+#dtabs>.row-title{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.row-title .chip.chip-add{border:1px dashed #c9b796;background:transparent;color:var(--soft);border-radius:14px;padding:2px 10px;font:inherit;font-size:12px;line-height:1.35;cursor:pointer;flex-shrink:0}
+.row-title .chip.chip-add:hover{color:var(--accent);border-color:var(--accent)}
+/* v37 管理:标题行右边「管理」「＋ 新建」;管理时自建的胶囊带 ✎,自带的变淡 */
+.row-title .chip.chip-manage{border:1px solid var(--line);background:#fffdf7;color:var(--soft);border-radius:14px;padding:2px 10px;font:inherit;font-size:12px;line-height:1.35;cursor:pointer;flex-shrink:0;margin-left:auto}
+.row-title .chip.chip-manage.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.row-title .chip.chip-add{margin-left:0}
+#dtabs .chip .ed{display:none;font-style:normal;font-size:11px;color:var(--accent);margin-left:2px}
+#dtabs.managing .chip.my-tag .ed,#dtabs.managing .chip.mine .ed{display:inline}
+#dtabs.managing .chip.my-tag,#dtabs.managing .chip.mine{border-style:dashed;border-color:var(--accent)}
+#dtabs.managing #catChips .chip:not(.my-tag):not(.chip-more),#dtabs.managing #setChips .chip:not(.mine):not(.chip-more){opacity:.45}
