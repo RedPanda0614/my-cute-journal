@@ -42,7 +42,7 @@
   const vis=Object.values(assets).filter(a=>!a.hidden),cur=typeof tab!=='undefined'?tab:'';
   row.innerHTML='<span class="set-lbl">素材套</span>';
   for(const s of OM.sets){const n=vis.filter(a=>a.cat===CAT(s.id)).length;if(!n)continue;const b=el('button','chip'+(cur===CAT(s.id)?' on':''),`${s.name}<small>${n}</small>`);b.type='button';b.title=`${s.credit} · ${s.license}`;
-   b.onclick=()=>{if(window.MaterialLibrary?.filters?.favorite)$('#materialFavorite')?.click();setTab(CAT(s.id));ensureSet(s.id)};row.append(b)}}
+   b.dataset.tab=CAT(s.id);b.onclick=()=>{if(window.MaterialLibrary?.filters?.favorite)$('#materialFavorite')?.click();setTab(CAT(s.id));ensureSet(s.id)};row.append(b)}}
  const oldDR=drawerRender;drawerRender=function(){const r=oldDR.apply(this,arguments);paintSets();return r};
  paintSets();
 

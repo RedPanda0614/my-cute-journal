@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>手帐工作台</title>
 <link rel="stylesheet" href="fonts/fonts.css">
-<script src="fonts/catalog.js?v=37"></script>
+<script src="fonts/catalog.js?v=38"></script>
 <style>
 :root{--ink:#3b3226;--soft:#7a6a55;--cream:#f8f2e4;--paper:#fbf7ee;--kraft:#d6b78d;--line:#e2d4b8;--accent:#c0583f;--sage:#7f9c80;--mat:#4f866a}
 *{box-sizing:border-box}
@@ -426,9 +426,9 @@ button:disabled{opacity:.45;cursor:default}
 #textEditorPreview.font-error{color:var(--accent);font-size:13px;padding:16px;text-align:center}
 #mbox #textEditorMain{min-height:86px}
 </style>
-<link rel="stylesheet" href="workbench-extras.css?v=37">
-<link rel="stylesheet" href="workbench-v26.css?v=37">
-<link rel="stylesheet" href="ui-rules.css?v=37">
+<link rel="stylesheet" href="workbench-extras.css?v=38">
+<link rel="stylesheet" href="workbench-v26.css?v=38">
+<link rel="stylesheet" href="ui-rules.css?v=38">
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -569,7 +569,7 @@ button:disabled{opacity:.45;cursor:default}
 'use strict';
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const SIZES={'A5':[148,210],'A6':[105,148],'B6':[128,182],'TN 标准':[110,210],'TN 护照':[89,124],'方形':[100,100],'108×144':[108,144],'自定义':null};
-const KINDS={cream:'米白',kraft:'牛皮',grid:'方格',dots:'点阵',lined:'横线',salt:'盐系近白',trace:'描图纸'};
+const KINDS={cream:'米白',kraft:'牛皮',grid:'方格',dots:'点阵',lined:'横线',salt:'盐系近白',trace:'描图纸',photo:'自定义照片…'};
 const FONTS=Object.fromEntries(FONT_CATALOG.map(f=>[f.name,f.family]));
 /* 字库覆盖来自每份实际字体的 cmap；禁止把缺字伪装成另一字体。 */
 const FONT_META=new Map(FONT_CATALOG.map(f=>[f.family,f]));
@@ -654,7 +654,10 @@ function dims(){const p=state.paper;let w=p.cw,h=p.ch;if(p.landscape)[w,h]=[h,w]
 const sel=()=>state.items.find(i=>i.id===selId);
 
 /* ---------- 纸 ---------- */
-function paintPaper(ctx,W,H,k,kind,spread,o=0){
+function paintPaper(ctx,W,H,k,kind,spread,o=0,page=null){
+ // 自定义照片背景:铺满整页(居中裁切),出血也一起铺
+ if(kind==='photo'){const im=window.bgImage?.(page||curPage());ctx.clearRect(0,0,W,H);ctx.fillStyle='#f7f0e1';ctx.fillRect(0,0,W,H);
+  if(im&&im.complete&&im.naturalWidth){const s=Math.max(W/im.naturalWidth,H/im.naturalHeight),w=im.naturalWidth*s,h=im.naturalHeight*s;ctx.drawImage(im,(W-w)/2,(H-h)/2,w,h)}return}
  // o = 出血 mm:纸往外多画 o mm,格线和装订线仍然对齐成品尺寸
  const base={cream:'#f7f0e1',kraft:'#cfae84',grid:'#f8f3e7',dots:'#f8f3e7',lined:'#f8f3e7',salt:'#f7f7f3',trace:'rgba(250,250,246,0.6)'}[kind]||'#f7f0e1';
  ctx.clearRect(0,0,W,H);ctx.fillStyle=base;ctx.fillRect(0,0,W,H);
@@ -688,7 +691,7 @@ function layout(){
  for(let y=step;y<=H;y+=step){const n=document.createElement('span');n.className='num numl';n.textContent=y;n.style.left=(M*S-20)+'px';n.style.top=(M+y)*S+'px';mat.appendChild(n)}
  const page=$('#page');page.style.left=M*S+'px';page.style.top=M*S+'px';page.style.width=W*S+'px';page.style.height=H*S+'px';
  const c=$('#paper'),dpr=Math.min(2,devicePixelRatio||1);c.width=Math.round(W*S*dpr);c.height=Math.round(H*S*dpr);
- paintPaper(c.getContext('2d'),c.width,c.height,S*dpr,state.paper.kind,state.paper.spread);
+ paintPaper(c.getContext('2d'),c.width,c.height,S*dpr,state.paper.kind,state.paper.spread,0,curPage());
  const g=$('#guides');g.innerHTML='';
  if(state.paper.guides){
   const add=(l,t,w,h,col)=>{const d=document.createElement('div');Object.assign(d.style,{left:l*S+'px',top:t*S+'px',width:w*S+'px',height:h*S+'px',borderColor:col});g.appendChild(d)};
@@ -1609,7 +1612,7 @@ ${$('#kMore').value?'其他:'+$('#kMore').value+'\n':''}输出:透明底 PNG 优
 const curPage=()=>state.pages[state.cur];
 async function renderPage(dpm,bleed=0,page=curPage()){
  const {W,H}=dims(),b=bleed;try{await document.fonts.ready}catch(e){}
- const c=cv((W+2*b)*dpm,(H+2*b)*dpm),x=c.getContext('2d');paintPaper(x,c.width,c.height,dpm,page.kind,state.paper.spread,b);
+ const c=cv((W+2*b)*dpm,(H+2*b)*dpm),x=c.getContext('2d');paintPaper(x,c.width,c.height,dpm,page.kind,state.paper.spread,b,page);
  x.save();x.translate(b*dpm,b*dpm);
  for(const it of page.items){if(it.hidden||!assets[it.asset])continue;const im=await loadImg(assets[it.asset].src);
   x.save();x.translate(it.x*dpm,it.y*dpm);x.rotate(it.rot*Math.PI/180);if(it.flip)x.scale(-1,1);x.globalAlpha=it.opacity;x.drawImage(im,-it.w*dpm/2,-it.h*dpm/2,it.w*dpm,it.h*dpm);x.restore()}
@@ -1799,25 +1802,26 @@ async function init(){
 }
 window.workbenchReady=init();
 </script>
-<script src="ui-kit.js?v=37"></script>
-<script src="workbench-extras.js?v=37"></script>
-<script src="workbench-tools.js?v=37"></script>
-<script src="workbench-editor.js?v=37"></script>
-<script src="material-library.js?v=37"></script>
-<script src="workbench-v26.js?v=37"></script>
-<script src="open-materials.js?v=37"></script>
-<script src="workbench-v27.js?v=37"></script>
-<script src="workbench-v28.js?v=37"></script>
-<script src="workbench-v29.js?v=37"></script>
-<script src="workbench-v31.js?v=37"></script>
-<script src="workbench-v34.js?v=37"></script>
-<script src="workbench-editing.js?v=37"></script>
-<script src="workbench-library.js?v=37"></script>
-<script src="workbench-photos.js?v=37"></script>
-<script src="workbench-export.js?v=37"></script>
-<script src="workbench-storage.js?v=37"></script>
-<script src="material-descriptions.js?v=37"></script>
-<script src="workbench-v36.js?v=37"></script>
-<script src="workbench-v37.js?v=37"></script>
+<script src="ui-kit.js?v=38"></script>
+<script src="workbench-extras.js?v=38"></script>
+<script src="workbench-tools.js?v=38"></script>
+<script src="workbench-editor.js?v=38"></script>
+<script src="material-library.js?v=38"></script>
+<script src="workbench-v26.js?v=38"></script>
+<script src="open-materials.js?v=38"></script>
+<script src="workbench-v27.js?v=38"></script>
+<script src="workbench-v28.js?v=38"></script>
+<script src="workbench-v29.js?v=38"></script>
+<script src="workbench-v31.js?v=38"></script>
+<script src="workbench-v34.js?v=38"></script>
+<script src="workbench-editing.js?v=38"></script>
+<script src="workbench-library.js?v=38"></script>
+<script src="workbench-photos.js?v=38"></script>
+<script src="workbench-export.js?v=38"></script>
+<script src="workbench-storage.js?v=38"></script>
+<script src="material-descriptions.js?v=38"></script>
+<script src="workbench-v36.js?v=38"></script>
+<script src="workbench-v37.js?v=38"></script>
+<script src="workbench-v38.js?v=38"></script>
 </body>
 </html>

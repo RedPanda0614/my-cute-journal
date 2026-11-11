@@ -37,7 +37,7 @@
  const API=window.MaterialLibrary={matches,normalize,categories:BASECATS,sourceOf,get menuOpen(){return !!menuKind},get filters(){return clone(filters)},get data(){return clone(library)}};
  const oldAdd=addAsset;addAsset=async function(src,options){return normalize(await oldAdd(src,options))};
  const oldProject=projectData;projectData=function(){migrate();const p=oldProject();p.materialLibrary=clone(library);return p};
- const oldApply=applyProject;applyProject=async function(p){for(const c of p?.meta?.__cats||[])if(c&&typeof c.id==='string'&&!fixed.has(c.id))ensureCollection(c.id,c.name);if(p?.materialLibrary){for(const c of p.materialLibrary.collections||[])if(c&&typeof c.id==='string'&&typeof c.name==='string'){const existing=ensureCollection(c.id,c.name);if(existing){existing.name=c.name;if(['sheet','album'].includes(c.kind)){existing.kind=c.kind;existing.fileName=c.fileName||c.name;existing.importId=c.importId||null}}}library.tags=[...new Set([...library.tags,...(p.materialLibrary.tags||[])])];library.myTags=[...new Set([...(library.myTags||[]),...(p.materialLibrary.myTags||[])])]}await oldApply(p);migrate();clearFilters();closeMenu()};
+ const oldApply=applyProject;applyProject=async function(p){for(const c of p?.meta?.__cats||[])if(c&&typeof c.id==='string'&&!fixed.has(c.id))ensureCollection(c.id,c.name);if(p?.materialLibrary){for(const c of p.materialLibrary.collections||[])if(c&&typeof c.id==='string'&&typeof c.name==='string'){const existing=ensureCollection(c.id,c.name);if(existing){existing.name=c.name;if(['sheet','album'].includes(c.kind)){existing.kind=c.kind;existing.fileName=c.fileName||c.name;existing.importId=c.importId||null}}}library.tags=[...new Set([...library.tags,...(p.materialLibrary.tags||[])])];library.myTags=[...new Set([...(library.myTags||[]),...(p.materialLibrary.myTags||[])])];library.labels={...(library.labels||{}),...(p.materialLibrary.labels||{})};library.hiddenTabs=[...new Set([...(library.hiddenTabs||[]),...(p.materialLibrary.hiddenTabs||[])])]}await oldApply(p);migrate();clearFilters();closeMenu()};
  // 分类和四个筛选按钮占固定两行，所有可增长内容都放入浮层。
  const header=$('#tabList');header.innerHTML='';header.className='material-header';
  const top=document.createElement('div');top.className='material-top';top.innerHTML='<button class="material-category cb" id="materialCategory" aria-haspopup="dialog" aria-expanded="false"></button><button class="cb" id="materialFavorite" aria-pressed="false">☆ 收藏</button>';
@@ -88,6 +88,11 @@
  API.removeMyTag=name=>{library.myTags=(library.myTags||[]).filter(t=>t!==name);save()};
  // 清掉旧版本误建的「收纳夹」(编号和自带素材套一样)
  API.cleanSetCollections=()=>{const bad=library.collections.filter(c=>String(c.id).startsWith('set-')).map(c=>c.id);if(!bad.length)return 0;library.collections=library.collections.filter(c=>!bad.includes(c.id));cats=cats.filter(c=>!bad.includes(c.id));for(const a of Object.values(assets))if(a.collectionIds?.some(id=>bad.includes(id)))a.collectionIds=a.collectionIds.filter(id=>!bad.includes(id));if(bad.includes(filters.collection))filters.collection='';save();return bad.length};
+ // v38:自带的标签、素材套也能改名、删除(删除=从栏里拿掉,素材还在「全部」里)
+ API.labels=()=>library.labels||(library.labels={});
+ API.hiddenTabs=()=>library.hiddenTabs||(library.hiddenTabs=[]);
+ API.setLabel=(id,name)=>{const L=API.labels();if(name)L[id]=name;else delete L[id];save()};
+ API.setHidden=(id,on)=>{const h=new Set(API.hiddenTabs());on?h.add(id):h.delete(id);library.hiddenTabs=[...h];save()};
  API.endDrag=()=>{clearTimeout(dragTimer);dragTarget=null;setTimeout(closeMenu,0)};
  catEditor=function(c){return collectionDialog(c?library.collections.find(x=>x.id===c.id)||ensureCollection(c.id,c.name):null)};
  // 既有详情与批量流程保留；分类只列固定类型，素材套独立多选。

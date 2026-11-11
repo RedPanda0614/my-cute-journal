@@ -193,6 +193,8 @@
 .row-title .chip.chip-manage.on{background:var(--accent);border-color:var(--accent);color:#fff}
 .row-title .chip.chip-add{margin-left:0}
 #dtabs .chip .ed{display:none;font-style:normal;font-size:11px;color:var(--accent);margin-left:2px}
-#dtabs.managing .chip.my-tag .ed,#dtabs.managing .chip.mine .ed{display:inline}
-#dtabs.managing .chip.my-tag,#dtabs.managing .chip.mine{border-style:dashed;border-color:var(--accent)}
-#dtabs.managing #catChips .chip:not(.my-tag):not(.chip-more),#dtabs.managing #setChips .chip:not(.mine):not(.chip-more){opacity:.45}
+/* v38:管理时除了「全部」都能改,所有可改的胶囊都一样:虚线框 + ✎;已删除的变淡、划线,点一下可以恢复 */
+#dtabs.managing .chip[data-tab]:not([data-tab=all]):not(.chip-more) .ed,#dtabs.managing .chip.my-tag .ed,#dtabs.managing .chip.mine .ed{display:inline}
+#dtabs.managing .chip[data-tab]:not([data-tab=all]):not(.chip-more),#dtabs.managing .chip.my-tag,#dtabs.managing .chip.mine{border-style:dashed;border-color:var(--accent)}
+#dtabs.managing .chip[data-tab=all]{opacity:.45}
+#dtabs .chip.gone{opacity:.45;text-decoration:line-through}
