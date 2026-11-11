@@ -23,18 +23,18 @@
  (function mergeMenus(){const m=$('#projectMenu');if(!m)return;m.querySelector('summary').textContent='作品 ▾';
   const d=m.querySelector('.top-dropdown');d.innerHTML='';
   const item=(label,hint,fn)=>{const b=el('button','tag');b.innerHTML=`${label}<small>${hint}</small>`;b.onclick=()=>{m.open=false;fn()};d.append(b)};
-  item('保存到我的作品','存一份带封面的作品,随时打开',()=>$('#wbSaveWork')?.click());
+  item('保存当前作品','存一份带封面的作品,随时打开',()=>$('#wbSaveWork')?.click());
   item('打开我的作品','看全部作品',()=>setPane('works'));
-  item('下载备份文件','存成文件,换电脑也能打开',()=>downloadBackup());
-  item('从备份文件打开','打开之前下载的 .json',()=>$('#fProj').click());
+  item('从文件打开','打开导出的作品文件(.json)',()=>$('#fProj').click());
+  // v36:下载备份去掉了,在「导出 → 作品文件」里
   // 作品面板顶上也放备份按钮,说清楚两种保存的区别
-  const pane=$('.pn[data-pane="works"]');if(pane){const box=el('div','works-help','<p class="mini">「保存当前作品」存在这个浏览器里,带封面,方便挑着打开。<br>「下载备份」存成文件,换浏览器、换电脑也能打开。</p><div class="row"><button class="cb" id="wkBackup">下载备份</button><button class="cb" id="wkOpen">从备份文件打开</button></div>');pane.querySelector('.row')?.after(box);
-   $('#wkBackup').onclick=downloadBackup;$('#wkOpen').onclick=()=>$('#fProj').click()}
+  const pane=$('.pn[data-pane="works"]');if(pane){const box=el('div','works-help','<p class="mini">「保存当前作品」存在这个浏览器里,带封面,方便挑着打开。想换电脑接着改,用「导出 → 作品文件」。</p><button class="tool" id="wkOpen">从文件打开</button>');pane.querySelector('.row')?.after(box);
+   $('#wkOpen').onclick=()=>$('#fProj').click()}
   const h=pane?.querySelector('h3');if(h)h.textContent='我的作品';
  })();
 
  /* ================= P0-3 侧栏图标说明 ================= */
- const railHints={assets:'胶带、贴纸、照片等素材',text:'加文字、标题和手帐卡片',tidy:'编辑选中的东西',layers:'调整上下顺序、分组',ai:'生成任务单,导入生成好的图',styles:'整套风格样页',works:'保存和打开作品'};
+ const railHints={assets:'胶带、贴纸、照片等素材',text:'加文字、标题和手帐卡片',tidy:'编辑选中的东西',layers:'调整上下顺序、分组',ai:'推荐 skill,复制 prompt 给自己的 AI',styles:'整套风格样页',works:'保存和打开作品'};
  $$('.ri[data-pane]').forEach(b=>{if(railHints[b.dataset.pane])b.title=railHints[b.dataset.pane]});
 
  /* ================= P1 最近用过 + 常用字体 ================= */

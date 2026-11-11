@@ -124,7 +124,8 @@
 .photo-inline{display:flex;flex-direction:column;gap:6px}
 #editColor{display:flex;flex-direction:column;gap:6px}
 /* v35: 收纳不挤占素材；新增界面沿用同一套控件。 */
-#catChips,#setChips{flex-wrap:nowrap;min-height:39px;overflow:hidden;gap:6px}
+/* v36:默认两行(多出来的藏起来,点「展开 ▾」看全部),不再一行横向截断 */
+#catChips,#setChips{flex-wrap:wrap;overflow:visible;gap:6px}
 #catChips .chip:not(.chip-more):not(.chip-add),#setChips .chip:not(.chip-more):not(.chip-add){max-width:45%;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
 .chip-more,.chip-add{flex-shrink:0}
 .chip-browser{display:flex;flex-wrap:wrap;gap:6px;max-height:55vh;overflow:auto;margin:12px 0}
@@ -167,3 +168,18 @@
 .tool:hover:not(:disabled){border-color:var(--accent)}
 .tool.on{background:#f6dcc8;border-color:#e4b496}
 .tool:disabled{opacity:.45;cursor:default}
+
+/* ---------- 11. 推荐 skill 卡片(生图面板) ---------- */
+.sk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:8px 0 14px}
+.sk-card{display:flex;flex-direction:column;gap:4px;padding:0 0 10px;border:1px solid var(--line);border-radius:6px;background:#fffdf7;cursor:pointer;text-align:left;font:inherit;color:var(--ink);overflow:hidden}
+.sk-card:hover{border-color:var(--accent)}
+.sk-card .sk-pic{display:block;aspect-ratio:4/3;background:#efe6d4;overflow:hidden}
+.sk-card .sk-pic img{width:100%;height:100%;object-fit:cover;display:block}
+.sk-card b{font-size:13px;padding:2px 10px 0}
+.sk-card .mini{font-size:11.5px;line-height:1.45;color:var(--soft);padding:0 10px}
+.sk-intro{margin:2px 0 4px;line-height:1.5}
+.sk-detail{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;margin-top:6px}
+.sk-detail>img{max-width:340px;max-height:420px;border-radius:6px;border:1px solid var(--line);background:#efe6d4}
+.sk-side{flex:1;min-width:260px;display:flex;flex-direction:column;gap:8px}
+.sk-side a{color:var(--accent);font-size:12px;word-break:break-all}
+.sk-prompt{min-height:300px;font-size:12.5px;line-height:1.6;resize:vertical}
