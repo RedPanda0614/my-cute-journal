@@ -1,0 +1,204 @@
+/* 界面规范(v30)。最后载入,把各版本留下的不同写法统一成一套。
+   规则写在 根目录 开发规则.md 的「界面规范」;改样式先改这里,别在别的文件里另起一套。 */
+
+:root{--ctl-h:30px;--ctl-r:4px;--lbl-w:4.5em}
+
+/* ---------- 1. 按钮:编辑侧栏里所有按钮一个样子 ---------- */
+.pn[data-pane="tidy"] .edit-body .tool,
+.pn[data-pane="tidy"] .edit-body .cb,
+.pn[data-pane="tidy"] .wb-controls .tool,
+.pn[data-pane="tidy"] .card-edit .cb{
+ display:flex;align-items:center;justify-content:center;width:100%;min-height:var(--ctl-h);padding:4px 8px;
+ border:1px solid var(--line);border-radius:var(--ctl-r);background:#fffdf7;color:var(--ink);font:inherit;font-size:12.5px;line-height:1.3;
+ text-align:center;cursor:pointer;box-sizing:border-box;white-space:normal}
+.pn[data-pane="tidy"] .edit-body .tool:hover:not(:disabled),
+.pn[data-pane="tidy"] .edit-body .cb:hover:not(:disabled),
+.pn[data-pane="tidy"] .wb-controls .tool:hover:not(:disabled){border-color:var(--accent)}
+.pn[data-pane="tidy"] .edit-body .tool.on,
+.pn[data-pane="tidy"] .edit-body .cb.on{background:#f6dcc8;border-color:#e4b496}
+.pn[data-pane="tidy"] .edit-body :is(.tool,.cb):disabled{opacity:.45;cursor:default}
+
+/* 并排的按钮:两列网格(翻转 / 复制、上移 / 下移…) */
+#editTransform .ctx-actions{display:grid!important;grid-template-columns:1fr 1fr;gap:6px;width:100%}
+#editTransform .ctx-actions>.more{grid-column:1/-1}
+#editTransform .ctx-actions .menu{display:grid!important;grid-template-columns:1fr 1fr;gap:6px}
+#editTransform .ctx-actions .menu .chk{grid-column:1/-1}
+.btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.btn-grid.three{grid-template-columns:1fr 1fr 1fr}
+
+/* ---------- 2. 下拉框:和按钮同高同边框 ---------- */
+.pn[data-pane="tidy"] .edit-body select.sel,
+.pn[data-pane="tidy"] .card-edit select.sel{width:100%;height:var(--ctl-h);border-radius:var(--ctl-r);font-size:12.5px;box-sizing:border-box}
+
+/* ---------- 3. 滑块:一行 = 标签 | 滑块 | 数值 ---------- */
+.pn[data-pane="tidy"] .edit-body .f:has(input[type=range]),
+.pn[data-pane="tidy"] .edit-slider{display:grid!important;grid-template-columns:var(--lbl-w) minmax(0,1fr) 3.6em;align-items:center;gap:6px;width:100%;font-size:12px}
+.pn[data-pane="tidy"] .edit-slider input[type=range],
+.pn[data-pane="tidy"] .edit-body .f input[type=range]{grid-column:2;width:100%;min-width:0;margin:0}
+.pn[data-pane="tidy"] .edit-slider output,
+.pn[data-pane="tidy"] .edit-body .f b{grid-column:3;order:3;text-align:right;font-size:11px;font-weight:400;color:var(--soft)}
+.pn[data-pane="tidy"] .edit-slider input[type=range]{order:2}
+#editColor .edit-slider{grid-template-columns:var(--lbl-w) minmax(0,1fr) 3.6em!important;gap:6px!important}
+#editColor .edit-slider input{grid-column:2!important;grid-row:1}
+#editColor .edit-slider output{grid-column:3;grid-row:1}
+
+/* ---------- 4. 取色器:标签 | 取色方块 | 色号,下一行预设色 ---------- */
+.pn[data-pane="tidy"] .tcolor{display:grid!important;grid-template-columns:var(--lbl-w) 38px minmax(0,1fr);align-items:center;gap:6px;width:100%}
+.pn[data-pane="tidy"] .tcolor .tc-lbl{font-size:12px;color:var(--soft)}
+.pn[data-pane="tidy"] .tcolor input[type=color]{width:38px;height:28px;padding:0;border:1px solid var(--line);border-radius:var(--ctl-r);background:#fffdf7;cursor:pointer}
+.pn[data-pane="tidy"] .tcolor .cf-hex,.pn[data-pane="tidy"] .tcolor #tHex{font-family:ui-monospace,Menlo,monospace;font-size:12px;height:28px;padding:3px 6px;min-width:0;box-sizing:border-box}
+.pn[data-pane="tidy"] .tcolor .tc-pre{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px}
+.pn[data-pane="tidy"] .tcolor .swatch{width:18px;height:18px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px var(--line);cursor:pointer;box-sizing:border-box}
+.pn[data-pane="tidy"] .tcolor .swatch.on{box-shadow:0 0 0 2px var(--accent)}
+
+/* ---------- 5. 表单行:标签 | 控件 ---------- */
+.card-edit .tl-row{display:grid;grid-template-columns:var(--lbl-w) minmax(0,1fr) auto;align-items:center;gap:6px}
+.card-edit .tl-row>span:first-child{font-size:12px;color:var(--soft)}
+.card-edit .tl-row input:not([type=color]),.card-edit .tl-row select{height:var(--ctl-h);box-sizing:border-box;min-width:0}
+.card-edit .tl-row .cb{width:auto;min-width:3.4em}
+
+/* ---------- 6. 说明文字 ---------- */
+.pn[data-pane="tidy"] .edit-body p.mini{margin:0;font-size:12px;line-height:1.5;color:var(--soft)}
+
+/* ---------- 7. 涂鸦区和其他区一样 ---------- */
+.pn[data-pane="tidy"] .wb-controls{display:flex;flex-direction:column;gap:6px}
+.pn[data-pane="tidy"] .wb-controls>label.edit-slider{justify-content:initial}
+
+/* ---------- 8. 素材栏上方的两组:「标签」「素材套」
+   两组结构完全一样:灰色小标题 → 一行胶囊 → 末尾虚线「＋ 新建」。
+   组和组之间用一条虚线隔开,上下留白相同;最后一组和下面的搜索栏之间也留同样的白。 ---------- */
+:root{--grp-gap:12px}
+.row-title{font-size:11.5px;color:var(--soft);margin:0 0 6px;line-height:1.2}
+.row-title.grp-sep{background:none;border-top:1px dashed var(--line);padding-top:var(--grp-gap);margin-top:0}
+#catChips,#setChips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0;padding:0 0 var(--grp-gap);border:none}
+#setChips .set-lbl{display:none}
+.cat-chips .chip,.set-chips .chip{border:1px solid var(--line);background:#fffdf7;border-radius:14px;padding:3px 10px;font:inherit;font-size:12.5px;line-height:1.35;color:var(--ink);cursor:pointer;display:flex;align-items:center;gap:4px;white-space:nowrap;box-sizing:border-box}
+.cat-chips .chip small,.set-chips .chip small{font-size:10.5px;color:var(--soft)}
+.cat-chips .chip.on,.set-chips .chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.cat-chips .chip.on small,.set-chips .chip.on small{color:#fde7dc}
+/* 两行的「＋ 新建」一模一样 */
+.cat-chips .chip.chip-add,.set-chips .chip.chip-add{border:1px dashed #c9b796;background:transparent;color:var(--soft)}
+.cat-chips .chip.chip-add:hover,.set-chips .chip.chip-add:hover{color:var(--accent);border-color:var(--accent)}
+.cat-chips .chip.drop,.set-chips .chip.drop{outline:2px dashed var(--accent);outline-offset:1px}
+/* 两组和小标题一行一行往下排,最下面和搜索栏之间留同样的白 */
+#dtabs{display:flex!important;flex-direction:column!important;align-items:stretch!important;padding:12px 12px 0!important;border-bottom:1px solid var(--line)}
+#dtabs>.row-title,#dtabs>#catChips,#dtabs>#setChips{width:100%;box-sizing:border-box}
+#dtabs>#tabList{display:none!important}
+
+/* 隐藏的东西一定要隐藏(上面的 display 规则不能盖过 hidden) */
+[hidden]{display:none!important}
+
+/* ---------- 9. 表单行:白边 / 撕边 这类「标签 | 下拉」 ---------- */
+.pn[data-pane="tidy"] .edit-body .fx-row{display:grid!important;grid-template-columns:var(--lbl-w) minmax(0,1fr);align-items:center;gap:6px;width:100%}
+.pn[data-pane="tidy"] .fx-row .fx-lbl{font-size:12px;color:var(--soft)}
+
+/* ---------- 10. 弹窗里的控件和侧栏同一套:标签 | 控件 | 数值 ---------- */
+#mbox .tcolor{display:grid!important;grid-template-columns:var(--lbl-w) 38px minmax(0,1fr);align-items:center;gap:6px}
+#mbox .tcolor .tc-lbl{font-size:12px;color:var(--soft)}
+#mbox .tcolor input[type=color]{width:38px;height:28px;padding:0;border:1px solid var(--line);border-radius:var(--ctl-r)}
+#mbox .tcolor .cf-hex{height:28px;font-size:12px;font-family:ui-monospace,Menlo,monospace;padding:3px 6px;min-width:0}
+#mbox .tcolor .tc-pre{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px}
+#mbox .tcolor .swatch{width:18px;height:18px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px var(--line);cursor:pointer}
+#mbox .tcolor .swatch.on{box-shadow:0 0 0 2px var(--accent)}
+#mbox .mrow,#mbox .wb-controls>label{display:grid!important;grid-template-columns:var(--lbl-w) minmax(0,1fr) 3.6em;align-items:center;gap:6px;font-size:12px;margin:0}
+#mbox .mrow>span:first-child{color:var(--soft)}
+#mbox .mrow output{text-align:right;font-size:11px;color:var(--soft)}
+#mbox .mrow .seg{margin:0;grid-column:2/4}
+#mbox .wb-controls>label input[type=range]{grid-column:2/4;width:100%}
+
+/* 制作胶带 */
+.tape-maker{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;margin-top:8px}
+.tm-src{position:relative;flex:none;overflow:hidden;background:repeating-conic-gradient(#efe6d4 0 25%,#f8f3e8 0 50%) 0 0/16px 16px;border:1px solid var(--line);border-radius:var(--ctl-r)}
+.tm-src canvas{display:block}
+.tm-band{position:absolute;border:2px solid var(--accent);background:rgba(200,100,75,.12);box-shadow:0 0 0 9999px rgba(40,30,20,.28);cursor:move;box-sizing:border-box}
+.tm-band i{position:absolute;background:var(--accent);border-radius:2px}
+.tm-band i[data-h=t],.tm-band i[data-h=b]{left:50%;width:26px;height:6px;margin-left:-13px;cursor:ns-resize}
+.tm-band i[data-h=t]{top:-4px}.tm-band i[data-h=b]{bottom:-4px}
+.tm-band i[data-h=l],.tm-band i[data-h=r]{top:50%;width:6px;height:26px;margin-top:-13px;cursor:ew-resize}
+.tm-band i[data-h=l]{left:-4px}.tm-band i[data-h=r]{right:-4px}
+.tm-side{flex:1;min-width:240px;display:flex;flex-direction:column;gap:8px}
+.tm-prev{margin-top:4px;padding:16px 10px;border:1px dashed var(--line);border-radius:var(--ctl-r);background:#f6efe1;display:flex;justify-content:center}
+.tm-prev canvas{max-width:100%;filter:drop-shadow(0 1px 1.5px rgba(60,40,20,.25))}
+/* 所有滑块行一样高、一样间距(相框与纹理、调色、变换…) */
+.pn[data-pane="tidy"] .edit-slider,.pn[data-pane="tidy"] .edit-body .f:has(input[type=range]){min-height:26px}
+.photo-inline{display:flex;flex-direction:column;gap:6px}
+#editColor{display:flex;flex-direction:column;gap:6px}
+/* v35: 收纳不挤占素材；新增界面沿用同一套控件。 */
+/* v36:默认两行(多出来的藏起来,点「展开 ▾」看全部),不再一行横向截断 */
+#catChips,#setChips{flex-wrap:wrap;overflow:visible;gap:6px}
+#catChips .chip:not(.chip-more):not(.chip-add),#setChips .chip:not(.chip-more):not(.chip-add){max-width:45%;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
+.chip-more,.chip-add{flex-shrink:0}
+.chip-browser{display:flex;flex-wrap:wrap;gap:6px;max-height:55vh;overflow:auto;margin:12px 0}
+.chip-browser .chip{max-width:100%!important}
+.library-actions{padding:4px 12px;flex-shrink:0}
+#compareTray{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;align-items:center;padding:0 12px 6px;font-size:12px}
+.compare-picked{outline:2px solid var(--accent);outline-offset:-2px}
+.candidate-grid,.element-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;max-height:65vh;overflow:auto;margin:12px 0}
+.candidate-card,.element-card{display:flex;flex-direction:column;gap:6px;border:1px solid var(--line);padding:10px;border-radius:4px;min-width:0}
+.candidate-card>img{width:100%;height:240px;object-fit:contain;background:#f6efe1}
+.element-card>img{width:100%;height:160px;object-fit:contain;background:#f6efe1}
+.candidate-card small{font-size:11px;color:var(--soft)}
+#selectionBounds{position:absolute;pointer-events:none;border:1.5px dashed var(--accent);box-sizing:border-box;z-index:10}
+#groupEntry,#saveElement{margin:6px 0}
+#multiEdit .mrow{display:grid;grid-template-columns:4.5em minmax(0,1fr) 2em;align-items:center;gap:6px;font-size:12px}
+#multiEdit .mrow input{height:30px;min-width:0;width:100%}
+#multiEdit .mrow output{text-align:right;color:var(--soft)}
+#multiEdit .edit-body{display:flex;flex-direction:column;gap:6px}
+#photoWorkflow,#reframeBar{margin-bottom:6px}
+#photoFillHint{margin:4px 12px}
+.reframing .item.selected{cursor:move;outline:2px dashed var(--accent)}
+.reframing .item .h,.reframing .h-stem{display:none}
+.disk-list{display:flex;flex-direction:column;gap:8px;margin:12px 0;max-height:58vh;overflow:auto}
+.disk-list .edit-body{display:flex;flex-direction:column;gap:6px;padding:8px}
+.disk-list select{max-width:100%;width:100%}
+.save-status{max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}
+.export-controls{display:flex;flex-direction:column;gap:6px}
+#mbox .export-controls .mrow{grid-template-columns:5em minmax(0,1fr)}
+.export-preview{display:flex;gap:12px;margin:12px 0;background:#e9e1d3;border:1px solid var(--line);padding:12px;min-height:240px;max-height:58vh}
+.export-pages{display:flex;flex-direction:column;gap:6px;width:85px;flex-shrink:0;overflow:auto}
+.export-sheet{flex:1;display:flex;justify-content:center;min-width:0}
+.export-sheet img{max-width:100%;max-height:54vh;object-fit:contain;box-shadow:0 2px 6px #49382d22}
+@media(max-width:600px){.save-status{max-width:150px}.candidate-grid,.element-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.candidate-card>img{height:150px}.export-preview{padding:6px}.export-pages{width:60px}.library-actions{padding:4px 8px}}
+#mbox:has(.export-preview){display:flex;flex-direction:column;height:min(800px,90dvh);overflow:hidden}
+#mbox:has(.export-preview)>h3,#mbox:has(.export-preview)>.export-controls,#mbox:has(.export-preview)>.mini,#mbox:has(.export-preview)>.btn-grid{flex-shrink:0}
+#mbox .export-preview{flex:1;min-height:100px;max-height:none;overflow:hidden}
+#mbox .export-sheet img{width:100%;height:100%;max-height:100%;object-fit:contain;min-height:0}
+/* tool 是共用组件，弹窗、素材工具和侧栏使用同一尺寸及居中对齐。 */
+.tool{display:flex;align-items:center;justify-content:center;box-sizing:border-box;width:100%;min-height:var(--ctl-h);padding:4px 8px;border:1px solid var(--line);border-radius:var(--ctl-r);background:#fffdf7;color:var(--ink);font:inherit;font-size:12.5px;line-height:1.3;text-align:center;cursor:pointer;white-space:normal}
+.tool:hover:not(:disabled){border-color:var(--accent)}
+.tool.on{background:#f6dcc8;border-color:#e4b496}
+.tool:disabled{opacity:.45;cursor:default}
+
+/* ---------- 11. 推荐 skill 卡片(生图面板) ---------- */
+.sk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:8px 0 14px}
+.sk-card{display:flex;flex-direction:column;gap:4px;padding:0 0 10px;border:1px solid var(--line);border-radius:6px;background:#fffdf7;cursor:pointer;text-align:left;font:inherit;color:var(--ink);overflow:hidden}
+.sk-card:hover{border-color:var(--accent)}
+.sk-card .sk-pic{display:block;aspect-ratio:4/3;background:#efe6d4;overflow:hidden}
+.sk-card .sk-pic img{width:100%;height:100%;object-fit:cover;display:block}
+.sk-card b{font-size:13px;padding:2px 10px 0}
+.sk-card .mini{font-size:11.5px;line-height:1.45;color:var(--soft);padding:0 10px}
+.sk-intro{margin:2px 0 4px;line-height:1.5}
+.sk-detail{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;margin-top:6px}
+.sk-detail>img{max-width:340px;max-height:420px;border-radius:6px;border:1px solid var(--line);background:#efe6d4}
+.sk-side{flex:1;min-width:260px;display:flex;flex-direction:column;gap:8px}
+.sk-side a{color:var(--accent);font-size:12px;word-break:break-all}
+.sk-prompt{min-height:300px;font-size:12.5px;line-height:1.6;resize:vertical}
+
+/* v37:标题行 = 组名(左) + 「＋ 新建」(右),两组一样 */
+#dtabs>.row-title{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.row-title .chip.chip-add{border:1px dashed #c9b796;background:transparent;color:var(--soft);border-radius:14px;padding:2px 10px;font:inherit;font-size:12px;line-height:1.35;cursor:pointer;flex-shrink:0}
+.row-title .chip.chip-add:hover{color:var(--accent);border-color:var(--accent)}
+/* v37 管理:标题行右边「管理」「＋ 新建」;管理时自建的胶囊带 ✎,自带的变淡 */
+.row-title .chip.chip-manage{border:1px solid var(--line);background:#fffdf7;color:var(--soft);border-radius:14px;padding:2px 10px;font:inherit;font-size:12px;line-height:1.35;cursor:pointer;flex-shrink:0;margin-left:auto}
+.row-title .chip.chip-manage.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.row-title .chip.chip-add{margin-left:0}
+#dtabs .chip .ed{display:none;font-style:normal;font-size:11px;color:var(--accent);margin-left:2px}
+/* v38:管理时除了「全部」都能改,所有可改的胶囊都一样:虚线框 + ✎;已删除的变淡、划线,点一下可以恢复 */
+#dtabs.managing .chip[data-tab]:not([data-tab=all]):not(.chip-more) .ed,#dtabs.managing .chip.my-tag .ed,#dtabs.managing .chip.mine .ed{display:inline}
+#dtabs.managing .chip[data-tab]:not([data-tab=all]):not(.chip-more),#dtabs.managing .chip.my-tag,#dtabs.managing .chip.mine{border-style:dashed;border-color:var(--accent)}
+#dtabs.managing .chip[data-tab=all]{opacity:.45}
+#dtabs .chip.gone{opacity:.45;text-decoration:line-through}
+
+/* v39 粘贴后,素材栏里新素材闪两下 */
+@keyframes justAdded{0%,100%{box-shadow:0 0 0 0 rgba(200,100,75,0)}25%,75%{box-shadow:0 0 0 3px var(--accent)}}
+#dgrid .thumb.just-added{animation:justAdded 1.2s ease 2;border-color:var(--accent)}
