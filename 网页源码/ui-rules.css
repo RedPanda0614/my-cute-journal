@@ -266,3 +266,42 @@ body.resizing,body.resizing *{cursor:col-resize!important;user-select:none}
 #pagebar .pb-head b{white-space:nowrap}
 #pagebar #pgInfo{white-space:nowrap}
 #editBoxQuick[hidden]{display:none!important}
+
+/* v45 文字窗口:格式都在这里;编辑栏只留「编辑文字」 */
+#editText #tf,#editText .tcolor,#editText .f:has(.swatch),#editText #tLayout,#editText .chk:has(#tv),#ctx .chk:has(#tv),#ctx #tLayout,#ctx #tf,#ctx .tcolor{display:none!important}
+.tx-form{display:flex;flex-direction:column;gap:8px;min-width:min(620px,86vw)}
+.tx-row{display:flex;align-items:center;gap:8px}
+.tx-row label{font-size:12px;color:var(--soft);white-space:nowrap}
+.tx-row .sel,.tx-row .txt{flex:1;min-width:0}
+.tx-form textarea{min-height:110px;resize:vertical;font-size:14px;line-height:1.6}
+.tx-fmt{display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;padding:8px 10px;border:1px dashed var(--line);border-radius:6px}
+.tx-f{display:flex;align-items:center;gap:8px;font-size:12px;min-height:28px}
+.tx-f[hidden]{display:none!important}
+.tx-f>span{color:var(--soft);width:3.6em;flex:none}
+.tx-f input[type=range]{flex:1;min-width:0}
+.tx-f>b{font-weight:400;font-size:12px;min-width:2.6em;color:var(--soft)}
+.tx-f .seg{display:flex}
+.tx-f .seg button{padding:3px 10px;font-size:12px}
+.tx-f input[type=number]{width:64px;height:28px}
+.tx-wide{grid-column:1/-1}
+.tx-sw{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.tx-sw .swatch{width:20px;height:20px;border-radius:50%;cursor:pointer;box-shadow:0 0 0 1px var(--line);border:2px solid #fffdf7}
+.tx-sw .swatch.on{box-shadow:0 0 0 2px var(--accent)}
+.tx-sw input[type=color]{width:26px;height:24px;padding:0;border:none;background:none}
+.tx-form #textEditorPreview{display:flex;align-items:center;justify-content:center;min-height:90px;max-height:300px;overflow:auto;background:repeating-conic-gradient(#f3ead8 0 25%,#fbf6ea 0 50%) 0 0/16px 16px;border-radius:6px;padding:10px}
+.tx-form #textEditorPreview img{max-width:100%;max-height:280px;object-fit:contain}
+.tx-size{text-align:right;margin-top:-4px}
+.tx-form.no-md .md-bar,.tx-form.no-md .md-tip{display:none}
+.tx-f .seg{margin:0}
+.tx-form #textEditorPreview{height:auto!important;min-height:80px;max-height:250px;margin:0;overflow:hidden;background:#fbf6ea;border:1px solid var(--line)}
+.tx-form #textEditorPreview img{max-width:100%!important;max-height:230px!important;height:auto;object-fit:contain}
+.tx-fmt label.tx-f,.tx-fmt .tx-f{display:flex!important;flex-direction:row!important;align-items:center;margin:0}
+.tx-fmt .tx-f input[type=range]{width:auto;flex:1;margin:0}
+.tx-fmt .tx-f input[type=checkbox]{margin:0;width:auto}
+#mbox:has(.tx-form){max-height:calc(100vh - 40px);overflow:auto}
+.tx-form textarea{min-height:84px;height:96px}
+.tx-form #textEditorPreview{max-height:200px}
+.tx-form #textEditorPreview img{max-height:180px!important}
+.tx-fmt{gap:2px 16px;padding:6px 10px}
+.tx-form .tx-f{min-height:26px}
+.tx-form .md-tip{margin:0}

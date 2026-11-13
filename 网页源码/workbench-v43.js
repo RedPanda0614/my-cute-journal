@@ -35,7 +35,8 @@
  /* ---------- ② Markdown 文字 ---------- */
  const MD_STYLES=['plain','label'];
  const MD_RE=/^(#{1,3} |[-*] |\d+[.、] |> |---\s*$)|\*\*.+?\*\*|==.+?==|~~.+?~~/m;
- const useMd=t=>t&&t.md!==false&&MD_STYLES.includes(t.style||'plain')&&!t.vertical&&MD_RE.test(t.text||'');
+ // v45:原字/打字机条 一律走这个排版(加粗、对齐、Markdown 都在这里)
+ const useMd=t=>t&&t.md!==false&&MD_STYLES.includes(t.style||'plain')&&!t.vertical&&!t.cutLetter;
  window.textUsesMarkdown=useMd;
  function parseBlocks(text){let n=0;return text.split('\n').map(raw=>{let m;
   if(/^\s*(---|\*\*\*|___)\s*$/.test(raw))return {k:'hr'};
@@ -52,7 +53,7 @@
  async function renderMd(t){await validateTextFonts(t);
   const px=t.size*TPX,FF=`"${t.font}","LXGW WenKai Screen",serif`,LS=(+t.ls||0)*px,LH=+t.lh||1.32,AL=t.align||'left';
   const pad=px*(t.style==='label'?.5:.3),m=cv(10,10).getContext('2d');
-  const fontOf=(s,b)=>`${b?'bold ':''}${s}px ${FF}`;
+  const fontOf=(s,b)=>`${b||t.bold?'bold ':''}${s}px ${FF}`;
   const wrapPx=t.boxW?Math.max(px*2,t.boxW*TPX-2*pad):0;
   const blocks=parseBlocks(t.text||' '),rows=[];let y=0,bw=0;
   blocks.forEach((bk,bi)=>{const s=px*(SC[bk.k]||1),head=!!SC[bk.k],ind=['li','ol','todo'].includes(bk.k)?px*1.25:bk.k==='quote'?px*.85:0;
@@ -108,13 +109,13 @@
    ta.value=v.slice(0,s)+out+v.slice(e);ta.setSelectionRange(s,s+out.length)}
   ta.focus();ta.dispatchEvent(new Event('input'))}
  const oldOpen=openTextEditor;openTextEditor=function(style,fontOverride,item){const r=oldOpen.apply(this,arguments);
-  const st=item?.style||style;if(!MD_STYLES.includes(st))return r;
+  if(String(item?.style||style).startsWith('t_'))return r;
   const ta=$('#textEditorMain');if(!ta)return r;
   const bar=document.createElement('div');bar.className='md-bar';
   bar.innerHTML=BTNS.map(([k,l])=>`<button type="button" class="cb md-${k}" data-k="${k}">${l}</button>`).join('');
   bar.querySelectorAll('button').forEach(b=>{b.onmousedown=e=>e.preventDefault();b.onclick=()=>apply(ta,b.dataset.k,BTNS.find(x=>x[0]===b.dataset.k)[2])});
   const tip=document.createElement('div');tip.className='mini md-tip';tip.textContent='也可以直接打 Markdown:# 标题、- 列表、1. 编号、- [ ] 待办、> 引用、**粗体**、==荧光==、~~删除线~~、---。⌘B 粗体,⌘U 荧光';
-  ta.before(bar);ta.after(tip);ta.rows=7;
+  ta.before(bar);ta.after(tip);ta.rows=7;if(!MD_STYLES.includes(item?.style||style)||item?.vertical)ta.closest('form')?.classList.add('no-md');
   ta.addEventListener('keydown',e=>{if(!(e.metaKey||e.ctrlKey))return;const k={b:'b',u:'hl'}[e.key.toLowerCase()];if(!k)return;e.preventDefault();apply(ta,k,BTNS.find(x=>x[0]===k)[2])});
   // 列表里回车自动续上
   ta.addEventListener('keydown',e=>{if(e.key!=='Enter'||e.shiftKey||e.metaKey||e.ctrlKey||e.isComposing)return;const v=ta.value,a=ta.selectionStart,s=v.lastIndexOf('\n',a-1)+1,line=v.slice(s,a);
