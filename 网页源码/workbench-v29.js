@@ -5,6 +5,9 @@
  const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e};
  const OM=window.OPEN_MATERIALS;if(!OM?.sets?.length)return;
  const SET=Object.fromEntries(OM.sets.map(s=>[s.id,s])),CAT=id=>'set-'+id;
+ // v40:素材套和分类分开。自带素材有自己的分类(标签),属于哪一套记在 a.openSet
+ const DEFAULT_CAT={vintage:'decor',moths:'sticker',wildflower:'sticker',greenaway:'sticker',birds:'sticker',butterfly:'sticker',trees:'sticker',initials:'lettering',printers:'decor',wallpaper:'background'};
+ const catOf=id=>DEFAULT_CAT[id]||'decor';
  window.OPEN_SET_DATA=window.OPEN_SET_DATA||{};
 
  /* ---------- 一套一套地载入大图 ---------- */
@@ -20,11 +23,11 @@
  /* ---------- 登记:先用缩略图,尺寸按原图记 ---------- */
  let regDone=null;
  const register=()=>regDone||(regDone=(async()=>{for(const m of OM.items){if(assets[m.id])continue;const s=SET[m.set];
-  try{const a=await addAsset(m.thumb,{id:m.id,name:m.name,source:'built-in',cat:CAT(m.set),tags:[s.name,'开源',...(m.tags||[])],style:m.style||null});a.w=m.w;a.h=m.h;a.openSet=m.set;a.full=false}catch(e){}}})());
+  try{const a=await addAsset(m.thumb,{id:m.id,name:m.name,source:'built-in',cat:catOf(m.set),tags:['开源',...(m.tags||[])],style:m.style||null});a.w=m.w;a.h=m.h;a.openSet=m.set;a.full=false}catch(e){}}})());
  // 打开作品前登记,打开后把作品里用到的套载入
  if(typeof applyProject==='function'){const old=applyProject;applyProject=async function(){await register();const r=await old.apply(this,arguments);
   // 存档里记着旧分类的(v27 时放在「贴纸」「手绘」里),改回它自己的素材套
-  for(const a of Object.values(assets))if(a.openSet)a.cat=CAT(a.openSet);
+  for(const a of Object.values(assets))if(a.openSet&&(String(a.cat).startsWith('set-')||!a.cat)){a.cat=catOf(a.openSet);a.tags=(a.tags||[]).filter(t=>t!==SET[a.openSet]?.name)}
   // 以前版本里的简笔画素材已经去掉了:纸上用到的先拿掉,免得显示空白
   let gone=0;for(const p of state.pages){const keep=p.items.filter(i=>!(String(i.asset).startsWith('os-dd-')&&!assets[i.asset]));gone+=p.items.length-keep.length;p.items.splice(0,p.items.length,...keep)}if(gone){toast(`去掉了 ${gone} 个已下架的简笔画素材`);renderItems?.()}
   const used=state.pages.flatMap(p=>p.items.flatMap(i=>[i.asset,i.orig]));if(await ensureAssets(used))renderItems();return r}}
@@ -36,18 +39,21 @@
  // 导出前把用到的都载入
  if(typeof renderPage==='function'){const o=renderPage;renderPage=async function(){await ensureAssets(state.pages.flatMap(p=>p.items.map(i=>i.asset)));return o.apply(this,arguments)}}
 
+ // 点素材套:按 openSet 筛,不再看分类
+ const ML0=window.MaterialLibrary;if(ML0){const om=ML0.matches;ML0.matches=function(a,o={}){const cat=o.category??tab;if(String(cat).startsWith('set-'))return a.openSet===cat.slice(4)&&om.call(this,a,{...o,category:'all'});return om.apply(this,arguments)}}
+
  /* ---------- 素材栏:「素材套」一行 ---------- */
  const row=el('div','set-chips');row.id='setChips';
  function paintSets(){const host=$('#catChips');if(!host)return;if(row.previousElementSibling!==host)host.after(row);
   const vis=Object.values(assets).filter(a=>!a.hidden),cur=typeof tab!=='undefined'?tab:'';
   row.innerHTML='<span class="set-lbl">素材套</span>';
-  for(const s of OM.sets){const n=vis.filter(a=>a.cat===CAT(s.id)).length;if(!n)continue;const b=el('button','chip'+(cur===CAT(s.id)?' on':''),`${s.name}<small>${n}</small>`);b.type='button';b.title=`${s.credit} · ${s.license}`;
+  for(const s of OM.sets){const n=vis.filter(a=>a.openSet===s.id).length;if(!n)continue;const b=el('button','chip'+(cur===CAT(s.id)?' on':''),`${s.name}<small>${n}</small>`);b.type='button';b.title=`${s.credit} · ${s.license}`;
    b.dataset.tab=CAT(s.id);b.onclick=()=>{if(window.MaterialLibrary?.filters?.favorite)$('#materialFavorite')?.click();setTab(CAT(s.id));ensureSet(s.id)};row.append(b)}}
  const oldDR=drawerRender;drawerRender=function(){const r=oldDR.apply(this,arguments);paintSets();return r};
  paintSets();
 
  /* ---------- 详情卡:来源 ---------- */
  if(typeof showInfo==='function'){const old=showInfo;showInfo=function(a){const r=old.apply(this,arguments);const s=a?.openSet&&SET[a.openSet];const host=$('#info');
-  if(s){const sel=$('#iCat');if(sel&&!sel.querySelector(`option[value="${CAT(s.id)}"]`)){const o=document.createElement('option');o.value=CAT(s.id);o.textContent='素材套 · '+s.name;sel.prepend(o)}if(sel&&a.cat===CAT(s.id))sel.value=CAT(s.id)}
-  if(s&&host&&!host.querySelector('.os-credit')){const d=el('div','mini os-credit');d.textContent=`素材套「${s.name}」· ${s.credit} · ${s.license}`;host.append(d)}return r}}
+  // v40:详情卡由 workbench-v40.js 重画,这里只补来源
+  if(s&&host&&!host.querySelector('.os-credit')){const d=el('div','mini os-credit');d.textContent=`来源:${s.credit} · ${s.license}`;host.append(d)}return r}}
 })();

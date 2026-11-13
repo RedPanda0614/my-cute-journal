@@ -202,3 +202,15 @@
 /* v39 粘贴后,素材栏里新素材闪两下 */
 @keyframes justAdded{0%,100%{box-shadow:0 0 0 0 rgba(200,100,75,0)}25%,75%{box-shadow:0 0 0 3px var(--accent)}}
 #dgrid .thumb.just-added{animation:justAdded 1.2s ease 2;border-color:var(--accent)}
+
+/* v40 素材详情卡:标签 / 素材套 两项,胶囊样式和素材栏一致 */
+#info .iattr{display:flex;flex-direction:column;gap:5px;margin:2px 0 4px}
+#info .iattr-h{font-size:12px;color:var(--soft);margin-top:2px}
+#info .ichips{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+#info .ichip{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);background:#fffdf7;border-radius:14px;padding:2px 9px;font-size:12px;line-height:1.35}
+#info .ichip b{font-weight:400;color:var(--soft);cursor:pointer}
+#info .ichip b:hover{color:var(--accent)}
+#info .ichip.cat{border-color:var(--accent);color:var(--accent)}
+#info .ichip.set{background:#f3ead8}
+#info .ichip-add{height:26px;font-size:12px;border-radius:14px;padding:2px 10px;min-width:0;width:auto;flex:1 1 110px;max-width:100%;box-sizing:border-box}
+#info select.ichip-add{flex:1 1 130px}
