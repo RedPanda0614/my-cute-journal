@@ -256,3 +256,13 @@ body.resizing,body.resizing *{cursor:col-resize!important;user-select:none}
 .md-tip{margin:4px 0 2px;line-height:1.5}
 #pagebar .pb-actions>*::before{display:none!important}
 #pagebar .pb-actions>*{border:1px solid var(--line);border-radius:6px;background:#fffdf7;height:28px;display:inline-flex;align-items:center}
+
+/* v44 右边页面栏:最靠边一列方格按钮(同左边栏 #rail),可收起 */
+#prail{flex:none;width:62px;box-sizing:border-box;display:flex;flex-direction:column;gap:6px;padding:8px 6px;background:#c9a77a;border-radius:3px;box-shadow:0 3px 8px rgba(70,40,10,.2);overflow-y:auto;min-height:0}
+#prail .ri{flex-shrink:0}
+#prail .grow{flex:1}
+#app.pfolded #pagebar{display:none!important}
+#pagebar .pb-head{flex-wrap:wrap;row-gap:2px}
+#pagebar .pb-head b{white-space:nowrap}
+#pagebar #pgInfo{white-space:nowrap}
+#editBoxQuick[hidden]{display:none!important}

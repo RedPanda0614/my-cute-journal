@@ -8,11 +8,18 @@
  function build(){const bar=$('#pagebar');if(!bar||bar.dataset.v43)return;bar.dataset.v43=1;
   const head=document.createElement('div');head.className='pb-head';
   const t=document.createElement('b');t.textContent='页面';head.append(t,$('#pgInfo'));
-  const acts=document.createElement('div');acts.className='pb-actions';
-  const names={add:'＋ 新页',dup:'复制本页',left:'↑ 上移',right:'↓ 下移',del:'删本页'};
-  ['add','dup','left','right','del'].forEach(k=>{const b=bar.querySelector(`[data-pg="${k}"]`);if(!b)return;b.textContent=names[k];if(k==='left')b.title='本页往前挪';if(k==='right')b.title='本页往后挪';acts.append(b)});
-  const q=$('#editBoxQuick');if(q)acts.append(q);
-  bar.insertBefore(head,$('#pages'));bar.append(acts);
+  // v44:页面操作做成右边最靠边的一列方格按钮(和左边栏一样),最下面是收起
+  const rail=document.createElement('nav');rail.id='prail';
+  const names={add:['＋','新页'],dup:['⧉','复制'],left:['↑','上移'],right:['↓','下移'],del:['✕','删除']};
+  ['add','dup','left','right','del'].forEach(k=>{const old=bar.querySelector(`[data-pg="${k}"]`);if(!old)return;const b=document.createElement('button');b.className='ri';b.dataset.pg=k;b.title=old.title||names[k][1]+(k==='del'?'本页':'');b.innerHTML=`<i>${names[k][0]}</i>${names[k][1]}`;b.onclick=()=>pageOp(k);old.remove();rail.append(b)});
+  const q=$('#editBoxQuick');if(q){const b=document.createElement('button');b.className='ri';b.id='prBox';b.title='在纸上框选';b.innerHTML='<i>⬚</i>框选';b.onclick=()=>q.click();q.hidden=true;new MutationObserver(()=>b.classList.toggle('on',q.classList.contains('on'))).observe(q,{attributes:true,attributeFilter:['class']});rail.append(b)}
+  const grow=document.createElement('div');grow.className='grow';
+  const fold=document.createElement('button');fold.className='ri small';fold.id='pFold';fold.title='收起 / 展开页面栏';
+  const setFold=on=>{$('#app').classList.toggle('pfolded',on);fold.innerHTML=on?'<i>«</i>展开':'<i>»</i>收起';try{localStorage.setItem('jw-pagebar-fold',on?1:0)}catch(_){}setTimeout(()=>{try{layout()}catch(_){}},20)};
+  fold.onclick=()=>setFold(!$('#app').classList.contains('pfolded'));rail.append(grow,fold);
+  bar.after(rail);let f0=false;try{f0=localStorage.getItem('jw-pagebar-fold')==='1'}catch(_){}setFold(f0);
+  bar.insertBefore(head,$('#pages'));
+
   const g=$('#pgrip');g.title='左右拖动调宽度,双击恢复';
   g.onpointerdown=e=>{e.preventDefault();g.classList.add('on');document.body.classList.add('resizing');const x0=e.clientX,w0=pbw;
    const mv=ev=>{setPBW(w0+(x0-ev.clientX));requestAnimationFrame(()=>{try{layout()}catch(_){}})};
