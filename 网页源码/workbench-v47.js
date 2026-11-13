@@ -4,7 +4,7 @@
  const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
  const SHAPES=[['square','正方形'],['rect','矩形'],['circle','圆形']];
  async function openFixedCrop(it,shape){
-  const src=await toCanvas(assets[it.asset]),W=src.width,H=src.height;
+  const isT=it.type==='text',src=isT?await renderText(it):await toCanvas(assets[it.asset]),W=src.width,H=src.height;// 文字:在完整的字上框,存成比例,之后改字还能保留裁切
   const maxW=Math.min(640,innerWidth*.8),maxH=Math.min(440,innerHeight*.55),k=Math.min(maxW/W,maxH/H,1),dw=Math.round(W*k),dh=Math.round(H*k);
   $('#mbox').innerHTML=`<h3>形状裁切</h3><div class="seg" id="fcShape">${SHAPES.map(([v,l])=>`<button type="button" data-v="${v}">${l}</button>`).join('')}</div>
    <div class="mini">拖框移动,拖四个角改大小</div>
@@ -26,7 +26,10 @@
   $('#fcCancel').onclick=closeModal;
   $('#fcOk').onclick=async()=>{const sx=r.x/k,sy=r.y/k,sw=Math.max(2,Math.round(r.w/k)),sh=Math.max(2,Math.round(r.h/k)),c=cv(sw,sh),x=c.getContext('2d');
    if(shape==='circle'){x.beginPath();x.ellipse(sw/2,sh/2,sw/2,sh/2,0,0,Math.PI*2);x.clip()}
+   if(isT){closeModal();commit();it.clip={x:sx/W,y:sy/H,w:sw/W,h:sh/H,shape};await rerenderText(it,true);save();renderPanel();return toast('裁好了')}
    x.drawImage(src,sx,sy,sw,sh,0,0,sw,sh);closeModal();await replaceAsset(it,c,'裁好了');save();renderPanel()}}
+ // 文字的裁切记在 it.clip 里,每次重画都按它裁;圆形在矩形裁完后再挖成圆
+ const oldClip=clipC;clipC=function(c,f){const r=oldClip.apply(this,arguments);if(f?.shape!=='circle')return r;const o=cv(r.width,r.height),x=o.getContext('2d');x.beginPath();x.ellipse(r.width/2,r.height/2,r.width/2,r.height/2,0,0,Math.PI*2);x.clip();x.drawImage(r,0,0);return o};
  window.openFixedCrop=openFixedCrop;
  const oldPanel=renderPanel;renderPanel=function(){const r=oldPanel.apply(this,arguments),it=sel(),sec=$('#editCropSection');
   if(sec){sec.hidden=true;sec.classList.add('v47-gone')}
@@ -35,6 +38,6 @@
   const add=(label,fn,cls='')=>{const b=document.createElement('button');b.className='cb v47 '+cls;b.type='button';b.textContent=label;b.onclick=fn;menu.append(b)};
   const head=document.createElement('div');head.className='mini v47 v47-h';head.textContent='裁切';menu.append(head);
   if(it.type==='image'){for(const [v,l] of SHAPES)add(l,()=>openFixedCrop(it,v));add('不规则',()=>runOp('shape'));add('拆分素材页',()=>runOp('split'))}
-  else if(it.type==='text'){add('矩形',()=>runOp('crop'));if(it.clip)add('取消裁切',()=>runOp('uncrop'))}
+  else if(it.type==='text'){for(const [v,l] of SHAPES)add(l,()=>openFixedCrop(it,v));if(it.clip)add('取消裁切',()=>runOp('uncrop'))}
   return r};
 })();
