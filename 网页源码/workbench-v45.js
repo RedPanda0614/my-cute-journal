@@ -73,14 +73,12 @@
     closeModal();save()}catch(err){invalid(err.message)}};
   openModal(true);update();requestAnimationFrame(()=>{main.focus();main.select()})};
 
- // 编辑栏:文字只留「编辑文字」,格式都去窗口里改
+ // v50:编辑栏的「文字」区保留(字体、颜色、对齐、字号… 和窗口里一样能改),放在「变换与图层」下面;「编辑文字」按钮在区里最上面
  const oldPanel=renderPanel;renderPanel=function(){const r=oldPanel.apply(this,arguments);const it=sel();
-  // v46:文字部分就是一个「编辑文字」按钮,放在最上面(和「存为我的元素」同样式),不要折叠区
-  const sec=$('#editTextSection');let btn=$('#v46EditText');
-  if(it?.type==='text'&&!it.cutLetter){if(sec)sec.hidden=true;
-   if(!btn){btn=document.createElement('button');btn.id='v46EditText';btn.className='tool';btn.textContent='编辑文字';btn.onclick=()=>{const t=sel();if(t?.type==='text')openTextEditor(t.style,t.font,t)}}
-   const anchor=$('#editTransformSection');if(anchor&&anchor.nextElementSibling!==btn)anchor.after(btn);btn.hidden=false}// v49:和普通素材一样,变换与图层在最上面
-  else if(btn)btn.hidden=true;
-  const nm=$('#editName');if(nm)nm.hidden=it?.type==='text'
+  $('#v46EditText')?.remove();
+  const sec=$('#editTextSection'),anchor=$('#editTransformSection');
+  if(it?.type==='text'&&!it.cutLetter&&sec&&anchor){sec.hidden=false;if(anchor.nextElementSibling!==sec)anchor.after(sec);const b=$('#bEditText');if(b){b.className='tool';b.textContent='编辑文字'}}
+  const draw=[...document.querySelectorAll('.pn[data-pane=tidy] > details.edit-section')].find(d=>d.querySelector('summary')?.textContent.trim()==='涂鸦');
+  if(draw)draw.classList.toggle('v50-gone',it?.type==='text');// 文字不需要涂鸦
   return r};
 })();

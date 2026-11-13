@@ -268,7 +268,7 @@ body.resizing,body.resizing *{cursor:col-resize!important;user-select:none}
 #editBoxQuick[hidden]{display:none!important}
 
 /* v45 文字窗口:格式都在这里;编辑栏只留「编辑文字」 */
-#editText #tf,#editText .tcolor,#editText .f:has(.swatch),#editText #tLayout,#editText .chk:has(#tv),#ctx .chk:has(#tv),#ctx #tLayout,#ctx #tf,#ctx .tcolor{display:none!important}
+/* v50:编辑栏文字区恢复显示 */
 .tx-form{display:flex;flex-direction:column;gap:8px;min-width:min(620px,86vw)}
 .tx-row{display:flex;align-items:center;gap:8px}
 .tx-row label{font-size:12px;color:var(--soft);white-space:nowrap}
@@ -322,3 +322,5 @@ body.resizing,body.resizing *{cursor:col-resize!important;user-select:none}
 #fcBox i[data-c=sw]{left:-2px;bottom:-2px;cursor:nesw-resize}#fcBox i[data-c=se]{right:-2px;bottom:-2px;cursor:nwse-resize}
 #editName[hidden]{display:none!important}
 #editName.v49-gone{display:none!important}
+details.edit-section.v50-gone{display:none!important}
+.pn[data-pane=draw] .grp{border:none;padding:0;margin:0}
