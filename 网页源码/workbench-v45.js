@@ -79,7 +79,8 @@
   const sec=$('#editTextSection');let btn=$('#v46EditText');
   if(it?.type==='text'&&!it.cutLetter){if(sec)sec.hidden=true;
    if(!btn){btn=document.createElement('button');btn.id='v46EditText';btn.className='tool';btn.textContent='编辑文字';btn.onclick=()=>{const t=sel();if(t?.type==='text')openTextEditor(t.style,t.font,t)}}
-   const anchor=$('#editTransformSection');if(anchor&&btn.nextElementSibling!==anchor)anchor.before(btn);btn.hidden=false}
-  else if(btn)btn.hidden=true
+   const anchor=$('#editTransformSection');if(anchor&&anchor.nextElementSibling!==btn)anchor.after(btn);btn.hidden=false}// v49:和普通素材一样,变换与图层在最上面
+  else if(btn)btn.hidden=true;
+  const nm=$('#editName');if(nm)nm.hidden=it?.type==='text'
   return r};
 })();

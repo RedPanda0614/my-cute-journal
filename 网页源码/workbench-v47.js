@@ -33,6 +33,10 @@
  window.openFixedCrop=openFixedCrop;
  const oldPanel=renderPanel;renderPanel=function(){const r=oldPanel.apply(this,arguments),it=sel(),sec=$('#editCropSection');
   if(sec){sec.hidden=true;sec.classList.add('v47-gone')}
+  // v49:和普通素材一个顺序:变换与图层在最上(文字的「编辑文字」紧跟其后);不显示名字行;「存为我的元素」在涂鸦下面
+  const name=$('#editName');if(name)name.classList.add('v49-gone');
+  const keep=$('#saveElement'),draw=[...document.querySelectorAll('.pn[data-pane=tidy] > details.edit-section')].find(d=>d.querySelector('summary')?.textContent.trim()==='涂鸦');
+  if(keep&&draw&&draw.nextElementSibling!==keep)draw.after(keep);
   const menu=$('#editTransform .more .menu');if(!it||!menu||it.locked||it.cutLetter)return r;
   menu.querySelectorAll('.v47').forEach(e=>e.remove());
   const add=(label,fn,cls='')=>{const b=document.createElement('button');b.className='cb v47 '+cls;b.type='button';b.textContent=label;b.onclick=fn;menu.append(b)};

@@ -320,3 +320,5 @@ body.resizing,body.resizing *{cursor:col-resize!important;user-select:none}
 #fcBox i{position:absolute;width:12px;height:12px;background:#fffdf7;border:1px solid var(--accent);border-radius:2px}
 #fcBox i[data-c=nw]{left:-2px;top:-2px;cursor:nwse-resize}#fcBox i[data-c=ne]{right:-2px;top:-2px;cursor:nesw-resize}
 #fcBox i[data-c=sw]{left:-2px;bottom:-2px;cursor:nesw-resize}#fcBox i[data-c=se]{right:-2px;bottom:-2px;cursor:nwse-resize}
+#editName[hidden]{display:none!important}
+#editName.v49-gone{display:none!important}
