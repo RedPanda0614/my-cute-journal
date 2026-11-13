@@ -308,3 +308,15 @@ body.resizing,body.resizing *{cursor:col-resize!important;user-select:none}
 #v46EditText[hidden]{display:none!important}
 #v46EditText{width:100%;margin:6px 0}
 .tx-form .md-bar{margin:0}
+
+/* v47 裁切并进变换与图层 */
+#editCropSection.v47-gone{display:none!important}
+#editTransform .menu .v47-h{grid-column:1/-1;margin:6px 0 0;color:var(--soft)}
+#fcStage{position:relative;margin:8px auto 0;user-select:none;touch-action:none}
+#fcCv{display:block;width:100%;height:100%}
+#fcBox{position:absolute;border:2px solid #fffdf7;box-shadow:0 0 0 9999px rgba(40,30,20,.45);cursor:move;box-sizing:border-box}
+#fcStage{overflow:hidden}
+#fcBox.round{border-radius:50%}
+#fcBox i{position:absolute;width:12px;height:12px;background:#fffdf7;border:1px solid var(--accent);border-radius:2px}
+#fcBox i[data-c=nw]{left:-2px;top:-2px;cursor:nwse-resize}#fcBox i[data-c=ne]{right:-2px;top:-2px;cursor:nesw-resize}
+#fcBox i[data-c=sw]{left:-2px;bottom:-2px;cursor:nesw-resize}#fcBox i[data-c=se]{right:-2px;bottom:-2px;cursor:nwse-resize}
