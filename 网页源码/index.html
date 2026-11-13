@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>手帐工作台</title>
 <link rel="stylesheet" href="fonts/fonts.css">
-<script src="fonts/catalog.js?v=40"></script>
+<script src="fonts/catalog.js?v=41"></script>
 <style>
 :root{--ink:#3b3226;--soft:#7a6a55;--cream:#f8f2e4;--paper:#fbf7ee;--kraft:#d6b78d;--line:#e2d4b8;--accent:#c0583f;--sage:#7f9c80;--mat:#4f866a}
 *{box-sizing:border-box}
@@ -426,9 +426,9 @@ button:disabled{opacity:.45;cursor:default}
 #textEditorPreview.font-error{color:var(--accent);font-size:13px;padding:16px;text-align:center}
 #mbox #textEditorMain{min-height:86px}
 </style>
-<link rel="stylesheet" href="workbench-extras.css?v=40">
-<link rel="stylesheet" href="workbench-v26.css?v=40">
-<link rel="stylesheet" href="ui-rules.css?v=40">
+<link rel="stylesheet" href="workbench-extras.css?v=41">
+<link rel="stylesheet" href="workbench-v26.css?v=41">
+<link rel="stylesheet" href="ui-rules.css?v=41">
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -1292,17 +1292,15 @@ function drawerRender(){
  const q=dq.toLowerCase();
  const list=Object.values(assets).filter(a=>window.MaterialLibrary?MaterialLibrary.matches(a):!a.hidden&&(tab==='all'||(tab==='fav'?a.fav:a.cat===tab))&&(!dcol||a.color===dcol)&&(!q||a.name.toLowerCase().includes(q)||a.tags.some(t=>t.toLowerCase().includes(q))));
  if(window.sortAssetList)window.sortAssetList(list);
- if(!list.length&&!['upload','tool'].includes(tab)){const e=document.createElement('div');e.className='empty';e.textContent=tab==='fav'&&!q&&!dcol?'还没有收藏。鼠标停在素材上,在弹出的卡片里点 ☆。':'没找到。换个词或颜色试试。';g.appendChild(e)}
+ if(!list.length&&!['upload','tool'].includes(tab)){const e=document.createElement('div');e.className='empty';e.textContent=tab==='fav'&&!q&&!dcol?'还没有收藏。点一下素材,在弹出的小窗口里点 ☆。':'没找到。换个词或颜色试试。';g.appendChild(e)}
  list.forEach(a=>{
   const t=document.createElement('div');t.className='thumb'+(batch&&picked.has(a.id)?' picked':'');t.dataset.id=a.id;
   t.innerHTML=`<img src="${a.src}"><span class="nm">${a.name}</span>${a.fav?'<span class="star">★</span>':''}${batch?'<span class="ck">✓</span>':''}`;
-  t.addEventListener('pointerdown',e=>{if(batch){e.preventDefault();picked.has(a.id)?picked.delete(a.id):picked.add(a.id);t.classList.toggle('picked');batchBar();return}hideInfo(true);startThumbDrag(e,a)});
-  t.addEventListener('mouseenter',()=>{if(batch||drag)return;clearTimeout(hov.t);hov.t=setTimeout(()=>showInfo(a,t),320)});
-  t.addEventListener('mouseleave',()=>{clearTimeout(hov.t);hov.t=setTimeout(()=>hideInfo(),220)});
+  t.addEventListener('pointerdown',e=>{if(batch){e.preventDefault();picked.has(a.id)?picked.delete(a.id):picked.add(a.id);t.classList.toggle('picked');batchBar();return}const was=hov.a===a&&$('#info').style.display==='block';hideInfo(true);startThumbDrag(e,a,t,was)});
   g.appendChild(t)});
  batchBar();
 }
-/* ---------- 素材详情卡(鼠标停在素材上) ---------- */
+/* ---------- 素材详情卡(点一下素材打开) ---------- */
 const hov={t:null,a:null,dirty:false};
 function showInfo(a,el){const C=$('#info'),esc=v=>String(v).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');hov.a=a;
  C.innerHTML=`<div class="ihead"><img src="${a.src}"></div>
@@ -1322,7 +1320,10 @@ function showInfo(a,el){const C=$('#info'),esc=v=>String(v).replace(/&/g,'&amp;'
  $('#iTagIn').onkeydown=e=>{if(e.key==='Enter'){const v=e.target.value.split(/[\s,，]+/).filter(Boolean);if(v.length){a.tags=[...new Set([...a.tags,...v])];e.target.value='';set();tagsUI()}}};
  $('#iPut').onclick=()=>{addItem(a);hideInfo(true)};
  if($('#iDel'))$('#iDel').onclick=()=>{a.hidden=true;hov.dirty=true;save();hideInfo(true)}
- C.onmouseenter=()=>clearTimeout(hov.t);C.onmouseleave=()=>{clearTimeout(hov.t);hov.t=setTimeout(()=>hideInfo(),260)}}
+ C.onmouseenter=C.onmouseleave=null}
+/* v41:小窗口点外面或按 Esc 关掉 */
+document.addEventListener('pointerdown',e=>{if(!e.target.closest('#info,#dgrid .thumb'))hideInfo(true)},true);
+document.addEventListener('keydown',e=>{if(e.key==='Escape')hideInfo(true)});
 function hideInfo(now){const C=$('#info');if(!C||C.style.display!=='block')return;
  if(!now&&(C.matches(':hover')||C.contains(document.activeElement)))return;
  C.style.display='none';hov.a=null;if(hov.dirty){hov.dirty=false;setTimeout(drawerRender,0)}}
@@ -1347,11 +1348,11 @@ function batchBar(){const B=$('#batchBar');if(!B)return;B.style.display=batch?'f
 function allTags(){const m={};Object.values(assets).forEach(a=>!a.hidden&&a.tags.forEach(t=>m[t]=(m[t]||0)+1));return Object.keys(m).sort((a,b)=>m[b]-m[a])}
 function metaOf(){const m={};Object.values(assets).filter(a=>a.source==='built-in').forEach(a=>m[a.id]={fav:a.fav,tags:a.tags,name:a.name,cat:a.cat,hidden:a.hidden,collectionIds:a.collectionIds||[],style:a.style||null,legacyCategory:a.legacyCategory||null});m.__cats=cats;return m}
 function applyMeta(m){if(!m)return;if(m.__cats)cats=m.__cats;for(const id in m)if(assets[id])Object.assign(assets[id],m[id])}
-function startThumbDrag(e,a){e.preventDefault();const gh=$('#ghost'),sx=e.clientX,sy=e.clientY;let moving=false;gh.src=a.src;
+function startThumbDrag(e,a,t,was){e.preventDefault();const gh=$('#ghost'),sx=e.clientX,sy=e.clientY;let moving=false;gh.src=a.src;
  const mv=ev=>{if(!moving&&Math.hypot(ev.clientX-sx,ev.clientY-sy)>5){moving=true;gh.style.display='block'}if(moving){gh.style.left=ev.clientX-40+'px';gh.style.top=ev.clientY-40+'px';const el=document.elementFromPoint(ev.clientX,ev.clientY),tb=el&&el.closest('[data-library-category]');window.MaterialLibrary?.dragHover(el);$$('[data-library-category]').forEach(b=>b.classList.toggle('drop',b===tb&&b.dataset.tab&&b.dataset.tab!=='all'))}};
  const up=ev=>{window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up);gh.style.display='none';window.MaterialLibrary?.endDrag();
   $$('[data-library-category],[data-library-collection],[data-library-tag]').forEach(b=>b.classList.remove('drop'));
-  if(!moving)return addItem(a);const el=document.elementFromPoint(ev.clientX,ev.clientY);if(window.WorkbenchExtras?.fillPhotoDrop?.(a,el))return;
+  if(!moving){if(t&&!was)showInfo(a,t);return}/* v41:点一下只开小窗口,在小窗口里点「放到纸上」 */const el=document.elementFromPoint(ev.clientX,ev.clientY);if(window.WorkbenchExtras?.fillPhotoDrop?.(a,el))return;
   const folder=el&&el.closest('[data-library-collection]');if(folder){MaterialLibrary.addToCollection([a.id],folder.dataset.libraryCollection);return}
   const tagChip=el&&el.closest('[data-library-tag]');if(tagChip){const t=tagChip.dataset.libraryTag;if(!a.tags.includes(t)){a.tags=[...a.tags,t];save();drawerRender()}return toast(`加上了标签「${t}」`)}const tb=el&&el.closest('[data-library-category]');if(tb&&tb.dataset.tab&&!['all','fav'].includes(tb.dataset.tab)){if(tb.dataset.tab!==a.cat){a.cat=tb.dataset.tab;save();tabsRender();drawerRender();toast(`放进了「${catName(a.cat)}」`)}return}
   if(el&&el.closest('#materialFavorite')){a.fav=true;save();tabsRender();drawerRender();return toast('收藏了')}
@@ -1802,28 +1803,28 @@ async function init(){
 }
 window.workbenchReady=init();
 </script>
-<script src="ui-kit.js?v=40"></script>
-<script src="workbench-extras.js?v=40"></script>
-<script src="workbench-tools.js?v=40"></script>
-<script src="workbench-editor.js?v=40"></script>
-<script src="material-library.js?v=40"></script>
-<script src="workbench-v26.js?v=40"></script>
-<script src="open-materials.js?v=40"></script>
-<script src="workbench-v27.js?v=40"></script>
-<script src="workbench-v28.js?v=40"></script>
-<script src="workbench-v29.js?v=40"></script>
-<script src="workbench-v31.js?v=40"></script>
-<script src="workbench-v34.js?v=40"></script>
-<script src="workbench-editing.js?v=40"></script>
-<script src="workbench-library.js?v=40"></script>
-<script src="workbench-photos.js?v=40"></script>
-<script src="workbench-export.js?v=40"></script>
-<script src="workbench-storage.js?v=40"></script>
-<script src="material-descriptions.js?v=40"></script>
-<script src="workbench-v36.js?v=40"></script>
-<script src="workbench-v37.js?v=40"></script>
-<script src="workbench-v38.js?v=40"></script>
-<script src="workbench-v39.js?v=40"></script>
-<script src="workbench-v40.js?v=40"></script>
+<script src="ui-kit.js?v=41"></script>
+<script src="workbench-extras.js?v=41"></script>
+<script src="workbench-tools.js?v=41"></script>
+<script src="workbench-editor.js?v=41"></script>
+<script src="material-library.js?v=41"></script>
+<script src="workbench-v26.js?v=41"></script>
+<script src="open-materials.js?v=41"></script>
+<script src="workbench-v27.js?v=41"></script>
+<script src="workbench-v28.js?v=41"></script>
+<script src="workbench-v29.js?v=41"></script>
+<script src="workbench-v31.js?v=41"></script>
+<script src="workbench-v34.js?v=41"></script>
+<script src="workbench-editing.js?v=41"></script>
+<script src="workbench-library.js?v=41"></script>
+<script src="workbench-photos.js?v=41"></script>
+<script src="workbench-export.js?v=41"></script>
+<script src="workbench-storage.js?v=41"></script>
+<script src="material-descriptions.js?v=41"></script>
+<script src="workbench-v36.js?v=41"></script>
+<script src="workbench-v37.js?v=41"></script>
+<script src="workbench-v38.js?v=41"></script>
+<script src="workbench-v39.js?v=41"></script>
+<script src="workbench-v40.js?v=41"></script>
 </body>
 </html>
