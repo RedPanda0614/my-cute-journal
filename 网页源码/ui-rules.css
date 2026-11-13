@@ -214,3 +214,20 @@
 #info .ichip.set{background:#f3ead8}
 #info .ichip-add{height:26px;font-size:12px;border-radius:14px;padding:2px 10px;min-width:0;width:auto;flex:1 1 110px;max-width:100%;box-sizing:border-box}
 #info select.ichip-add{flex:1 1 130px}
+
+/* v42 默认值胶囊(未分类 / 无)+ 上传窗口属性区 */
+#info .ichip.none,.up-attr .ichip.none{border-style:dashed;color:var(--soft);background:transparent}
+#info select.ichip-add.more,.up-attr select.ichip-add.more{flex:0 1 auto;color:var(--soft)}
+.up-attr{display:flex;flex-direction:column;gap:5px;margin-top:8px}
+.up-attr .iattr-h,.up-name .iattr-h{font-size:12px;color:var(--soft)}
+.up-attr .ichips{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.up-attr .ichip{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);background:#fffdf7;border-radius:14px;padding:2px 9px;font-size:12px;line-height:1.35}
+.up-attr .ichip b{font-weight:400;color:var(--soft);cursor:pointer}
+.up-attr .ichip.cat{border-color:var(--accent);color:var(--accent)}
+.up-attr .ichip-add{height:26px;font-size:12px;border-radius:14px;padding:2px 10px;width:auto;flex:0 1 180px;box-sizing:border-box}
+.up-name{display:flex;align-items:center;gap:8px}
+.up-name #shName{flex:0 1 240px}
+
+/* v42 搜索区只留两行:① 搜索 · 多选 · 上传  ② 一排颜色 */
+#pane.lib-simple #dcols,#dcols{display:flex!important;justify-content:space-between;margin-top:8px}
+#bFilters,#dfind .material-result,#pane .library-actions,#pane.lib-simple.filters-open .material-facets{display:none!important}

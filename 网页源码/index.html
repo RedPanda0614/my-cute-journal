@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>手帐工作台</title>
 <link rel="stylesheet" href="fonts/fonts.css">
-<script src="fonts/catalog.js?v=41"></script>
+<script src="fonts/catalog.js?v=42"></script>
 <style>
 :root{--ink:#3b3226;--soft:#7a6a55;--cream:#f8f2e4;--paper:#fbf7ee;--kraft:#d6b78d;--line:#e2d4b8;--accent:#c0583f;--sage:#7f9c80;--mat:#4f866a}
 *{box-sizing:border-box}
@@ -426,9 +426,9 @@ button:disabled{opacity:.45;cursor:default}
 #textEditorPreview.font-error{color:var(--accent);font-size:13px;padding:16px;text-align:center}
 #mbox #textEditorMain{min-height:86px}
 </style>
-<link rel="stylesheet" href="workbench-extras.css?v=41">
-<link rel="stylesheet" href="workbench-v26.css?v=41">
-<link rel="stylesheet" href="ui-rules.css?v=41">
+<link rel="stylesheet" href="workbench-extras.css?v=42">
+<link rel="stylesheet" href="workbench-v26.css?v=42">
+<link rel="stylesheet" href="ui-rules.css?v=42">
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -1429,7 +1429,7 @@ function nextUpload(){const U=UQ;U.i++;if(U.i<U.list.length)return showUpload();
  closeModal();save();if(U.saved){if(window.MaterialLibrary?.finishUpload(U))return;setTab(U.cat);toast(`放进了 ${U.saved} 个素材到「${catName(U.cat)}」`)}}
 
 /* ---------- 分类收纳 ---------- */
-const BASECATS=[['tape','胶带'],['sticker','贴纸'],['photo','照片'],['note','便签和纸片'],['background','打底纸 / 背景纸'],['ephemera','票据和收集物'],['seal','印章和火漆'],['lettering','文字和标题'],['decor','手绘和小装饰'],['physical','实物质感'],['uncategorized','待分类']];
+const BASECATS=[['tape','胶带'],['sticker','贴纸'],['photo','照片'],['note','便签和纸片'],['background','打底纸 / 背景纸'],['ephemera','票据和收集物'],['seal','印章和火漆'],['lettering','文字和标题'],['decor','手绘和小装饰'],['physical','实物质感'],['uncategorized','未分类']];
 let cats=[]; // 自己建的分类 [{id,name}]
 const catName=id=>(BASECATS.find(c=>c[0]===id)||[])[1]||(cats.find(c=>c.id===id)||{}).name||'未分类';
 function allCats(){return BASECATS.map(([id,name])=>({id,name}))}
@@ -1803,28 +1803,29 @@ async function init(){
 }
 window.workbenchReady=init();
 </script>
-<script src="ui-kit.js?v=41"></script>
-<script src="workbench-extras.js?v=41"></script>
-<script src="workbench-tools.js?v=41"></script>
-<script src="workbench-editor.js?v=41"></script>
-<script src="material-library.js?v=41"></script>
-<script src="workbench-v26.js?v=41"></script>
-<script src="open-materials.js?v=41"></script>
-<script src="workbench-v27.js?v=41"></script>
-<script src="workbench-v28.js?v=41"></script>
-<script src="workbench-v29.js?v=41"></script>
-<script src="workbench-v31.js?v=41"></script>
-<script src="workbench-v34.js?v=41"></script>
-<script src="workbench-editing.js?v=41"></script>
-<script src="workbench-library.js?v=41"></script>
-<script src="workbench-photos.js?v=41"></script>
-<script src="workbench-export.js?v=41"></script>
-<script src="workbench-storage.js?v=41"></script>
-<script src="material-descriptions.js?v=41"></script>
-<script src="workbench-v36.js?v=41"></script>
-<script src="workbench-v37.js?v=41"></script>
-<script src="workbench-v38.js?v=41"></script>
-<script src="workbench-v39.js?v=41"></script>
-<script src="workbench-v40.js?v=41"></script>
+<script src="ui-kit.js?v=42"></script>
+<script src="workbench-extras.js?v=42"></script>
+<script src="workbench-tools.js?v=42"></script>
+<script src="workbench-editor.js?v=42"></script>
+<script src="material-library.js?v=42"></script>
+<script src="workbench-v26.js?v=42"></script>
+<script src="open-materials.js?v=42"></script>
+<script src="workbench-v27.js?v=42"></script>
+<script src="workbench-v28.js?v=42"></script>
+<script src="workbench-v29.js?v=42"></script>
+<script src="workbench-v31.js?v=42"></script>
+<script src="workbench-v34.js?v=42"></script>
+<script src="workbench-editing.js?v=42"></script>
+<script src="workbench-library.js?v=42"></script>
+<script src="workbench-photos.js?v=42"></script>
+<script src="workbench-export.js?v=42"></script>
+<script src="workbench-storage.js?v=42"></script>
+<script src="material-descriptions.js?v=42"></script>
+<script src="workbench-v36.js?v=42"></script>
+<script src="workbench-v37.js?v=42"></script>
+<script src="workbench-v38.js?v=42"></script>
+<script src="workbench-v39.js?v=42"></script>
+<script src="workbench-v40.js?v=42"></script>
+<script src="workbench-v42.js?v=42"></script>
 </body>
 </html>

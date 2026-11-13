@@ -16,7 +16,7 @@
  function reveal(id){setPane('assets');setTab('all');requestAnimationFrame(()=>{const t=document.querySelector(`#dgrid .thumb[data-id="${id}"]`);if(!t)return;t.scrollIntoView({block:'center',behavior:'smooth'});t.classList.remove('just-added');void t.offsetWidth;t.classList.add('just-added');setTimeout(()=>t.classList.remove('just-added'),2400)})}
  async function pasteImages(files){const {W,H}=dims();let n=0,last=null;
   for(const f of files){try{const src=await shrink(await readFile(f)),d=new Date(),name=`粘贴 ${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`+(files.length>1?` (${n+1})`:'');
-   const a=await addAsset(src,{name,source:'upload',cat:'upload',tags:['粘贴']});
+   const a=await addAsset(src,{name,source:'upload',cat:'uncategorized',tags:[]});
    const at=lastAt&&Date.now()-lastAt.t<10*60*1000?lastAt:{x:W/2,y:H/2},w=Math.min(W*.5,60);
    addItem(a,Math.min(W,Math.max(0,at.x+n*6)),Math.min(H,Math.max(0,at.y+n*6)),{w});last=a;n++}catch(e){console.warn(e)}}
   if(!last)return toast('没读到图片');drawerRender();reveal(last.id);toast(n>1?`粘贴了 ${n} 张图,也存进了「我的上传」`:'粘贴好了,也存进了「我的上传」')}
