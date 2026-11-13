@@ -13,3 +13,6 @@
 __pycache__/
 *.pyc
 output/playwright/
+
+# 本地字体(授权不允许再分发的字体只放自己电脑)
+网页源码/fonts/local/
