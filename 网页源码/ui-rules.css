@@ -231,3 +231,28 @@
 /* v42 搜索区只留两行:① 搜索 · 多选 · 上传  ② 一排颜色 */
 #pane.lib-simple #dcols,#dcols{display:flex!important;justify-content:space-between;margin-top:8px}
 #bFilters,#dfind .material-result,#pane .library-actions,#pane.lib-simple.filters-open .material-facets{display:none!important}
+
+/* v43 页面栏:最右边竖着,和左边栏一样高 */
+#center{flex-direction:row!important;gap:8px}
+#desk{flex:1;min-width:0}
+#pagebar{width:var(--pbw,150px);flex:none;flex-direction:column;align-items:stretch;gap:8px;padding:10px 8px;box-sizing:border-box;min-height:0}
+#pgrip{left:-7px!important;right:auto!important;top:0!important;bottom:0;width:10px!important;height:auto!important;cursor:col-resize!important}
+#pgrip::after{left:3px!important;top:50%!important;width:3px!important;height:44px!important;margin:-22px 0 0!important}
+#pagebar .pb-head{display:flex;align-items:baseline;justify-content:space-between;gap:4px;padding:0 2px}
+#pagebar .pb-head b{font-size:13px;color:var(--soft);font-weight:400}
+#pagebar #pgInfo{min-width:0;font-size:12px}
+#pages{flex:1 1 auto;flex-direction:column;align-items:center;overflow-x:hidden!important;overflow-y:auto;gap:14px;padding:4px 4px 10px;min-height:0}
+#pages .pg{width:calc(100% - 14px)}
+#pages .pg img,#pages .pg .blank{width:100%;height:auto}
+#pages .pg .blank{aspect-ratio:.7}
+#pagebar .pb-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+#pagebar .pb-actions>*{width:100%;justify-content:center;margin:0;padding:4px 6px!important;font-size:12px}
+#pagebar .pb-actions [data-pg=add]{grid-column:1/-1}
+body.resizing,body.resizing *{cursor:col-resize!important;user-select:none}
+/* v43 文字编辑:Markdown 格式按钮 */
+.md-bar{display:flex;flex-wrap:wrap;gap:5px;margin:4px 0 6px}
+.md-bar .cb{padding:2px 8px;font-size:12px;min-height:26px}
+.md-bar .md-h1{font-weight:700}.md-bar .md-b{font-weight:700}.md-bar .md-st{text-decoration:line-through}.md-bar .md-hl{background:linear-gradient(transparent 45%,rgba(240,200,80,.6) 45%)}
+.md-tip{margin:4px 0 2px;line-height:1.5}
+#pagebar .pb-actions>*::before{display:none!important}
+#pagebar .pb-actions>*{border:1px solid var(--line);border-radius:6px;background:#fffdf7;height:28px;display:inline-flex;align-items:center}
