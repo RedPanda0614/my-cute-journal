@@ -12,8 +12,6 @@
   const group=title?TITLES:ART;
   $('#mbox').innerHTML=`<form id="textEditorForm" class="tx-form"><h3>${item?'编辑文字':'添加文字'}</h3>
    <div class="tx-row"><label>样式</label><select class="sel" id="txStyle">${group.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('')}</select><label>字体</label><select class="sel" id="textEditorFont"></select></div>
-   <textarea class="txt" id="textEditorMain" required rows="5"></textarea>
-   ${title?'<div class="tx-row"><label>小标题</label><input class="txt" id="textEditorSub"><label>字体</label><select class="sel" id="textEditorSubFont"></select></div>':''}
    ${title?'':`<div class="tx-fmt">
     <div class="tx-f"><span>对齐</span><div class="seg" id="txAlign">${[['left','左'],['center','居中'],['right','右']].map(([k,l])=>`<button type="button" data-v="${k}">${l}</button>`).join('')}</div></div>
     <div class="tx-f" id="txBoldRow"><span>字重</span><div class="seg" id="txBold"><button type="button" data-v="0">常规</button><button type="button" data-v="1">加粗</button></div></div>
@@ -24,6 +22,8 @@
     <div class="tx-f"><span>宽度</span><div class="seg" id="txBox"><button type="button" data-v="auto">按内容</button><button type="button" data-v="fixed">固定</button></div><input type="number" class="txt" id="txBoxW" min="8" max="${Math.round(dims().W*1.5)}" step="1"><b>mm</b></div>
     <label class="tx-f"><span>竖排</span><input type="checkbox" id="txVert"></label>
    </div>`}
+   <textarea class="txt" id="textEditorMain" required rows="5"></textarea>
+   ${title?'<div class="tx-row"><label>小标题</label><input class="txt" id="textEditorSub"><label>字体</label><select class="sel" id="textEditorSubFont"></select></div>':''}
    <div id="textEditorPreview" aria-label="文字预览"></div><div class="mini tx-size" id="txDim"></div>
    <div class="text-editor-actions"><button class="tag" id="textEditorCancel" type="button">取消</button><button class="tag red" id="textEditorApply" type="submit">${item?'保存':'添加到纸上'}</button></div></form>`;
   const form=$('#textEditorForm'),main=$('#textEditorMain'),sub=$('#textEditorSub'),mainFont=$('#textEditorFont'),subFont=$('#textEditorSubFont'),preview=$('#textEditorPreview'),apply=$('#textEditorApply');
@@ -75,6 +75,11 @@
 
  // 编辑栏:文字只留「编辑文字」,格式都去窗口里改
  const oldPanel=renderPanel;renderPanel=function(){const r=oldPanel.apply(this,arguments);const it=sel();
-  if(it?.type==='text'){const b=$('#bEditText');if(b){b.className='tool';b.textContent='编辑文字(字体、颜色、对齐、字号…)'}}
+  // v46:文字部分就是一个「编辑文字」按钮,放在最上面(和「存为我的元素」同样式),不要折叠区
+  const sec=$('#editTextSection');let btn=$('#v46EditText');
+  if(it?.type==='text'&&!it.cutLetter){if(sec)sec.hidden=true;
+   if(!btn){btn=document.createElement('button');btn.id='v46EditText';btn.className='tool';btn.textContent='编辑文字';btn.onclick=()=>{const t=sel();if(t?.type==='text')openTextEditor(t.style,t.font,t)}}
+   const anchor=$('#editTransformSection');if(anchor&&btn.nextElementSibling!==anchor)anchor.before(btn);btn.hidden=false}
+  else if(btn)btn.hidden=true
   return r};
 })();

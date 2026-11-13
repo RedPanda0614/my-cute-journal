@@ -305,3 +305,6 @@ body.resizing,body.resizing *{cursor:col-resize!important;user-select:none}
 .tx-fmt{gap:2px 16px;padding:6px 10px}
 .tx-form .tx-f{min-height:26px}
 .tx-form .md-tip{margin:0}
+#v46EditText[hidden]{display:none!important}
+#v46EditText{width:100%;margin:6px 0}
+.tx-form .md-bar{margin:0}
