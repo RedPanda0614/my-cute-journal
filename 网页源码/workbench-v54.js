@@ -82,6 +82,7 @@
   // 「字效」用标题区上面那一条示例文字,不再各放一条
   body('basic')?.querySelector('.style-preview-bar')?.classList.add('v54-gone');$('#basicFilters')?.classList.add('v54-gone');
   [...tabs.children].forEach(b=>b.classList.add('v54-gone'));
+  if(card)tabs.after(card);// 卡片放在页签下面
   const T=[['fonts','字体'],['titles','标题'],['cards','卡片']];
   function show(k){T.forEach(([x])=>tabs.querySelector(`[data-v54="${x}"]`)?.classList.toggle('on',x===k));
    const vis={fonts:['fonts'],titles:['titles','basic','cutout'],cards:[]}[k];
