@@ -324,3 +324,7 @@ body.resizing,body.resizing *{cursor:col-resize!important;user-select:none}
 #editName.v49-gone{display:none!important}
 details.edit-section.v50-gone{display:none!important}
 .pn[data-pane=draw] .grp{border:none;padding:0;margin:0}
+
+/* v53 透明处点穿 + 悬停提示 */
+#items .item.pass{pointer-events:none}
+#items .item.hov{outline:1.5px dashed rgba(192,88,63,.55);outline-offset:1px}
