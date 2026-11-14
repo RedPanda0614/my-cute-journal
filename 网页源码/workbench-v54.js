@@ -6,13 +6,10 @@
  const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
  const tidy=$('.pn[data-pane="tidy"]');
  /* ---------- ① 入口 ---------- */
- ['works','ai','layers','styles'].forEach(p=>$(`#rail .ri[data-pane="${p}"]`)?.classList.add('v54-gone'));
- // 图层并进编辑
- const L=$('#layers');let layersBox=null;
- if(L&&tidy){layersBox=document.createElement('details');layersBox.className='edit-section v54-layers';layersBox.open=true;
-  layersBox.innerHTML='<summary>图层</summary>';const body=document.createElement('div');body.className='edit-body';body.append(L);layersBox.append(body);tidy.append(layersBox)}
- const oldSet=setPane;setPane=function(p){if(p==='layers'){oldSet.call(this,'tidy');if(layersBox){layersBox.open=true;layersBox.scrollIntoView({block:'nearest'})}return}const r=oldSet.apply(this,arguments);
-  if(p==='works'||p==='ai')$$('#rail .ri').forEach(b=>b.classList.remove('on'));return r};
+ ['works','ai','styles'].forEach(p=>$(`#rail .ri[data-pane="${p}"]`)?.classList.add('v54-gone'));
+ // v55:图层还是单独一个入口(用户觉得并进编辑不方便)
+ const layersBox=null;
+ const oldSet=setPane;setPane=function(p){const r=oldSet.apply(this,arguments);if(p==='works'||p==='ai')$$('#rail .ri').forEach(b=>b.classList.remove('on'));return r};
  // 素材面板:「上传」换成「添加 ▾」= 上传图片 / AI 生成素材
  const up=$('#materialUpload');
  if(up){const wrap=document.createElement('span');wrap.className='v54-add';up.replaceWith(wrap);up.textContent='添加 ▾';up.onclick=e=>{e.stopPropagation();menu.hidden=!menu.hidden};wrap.append(up);
@@ -63,7 +60,6 @@
   tidy.querySelectorAll(':scope>details.edit-section[open]').forEach(x=>{if(x!==d&&!x.classList.contains('v54-layers'))x.open=false})},true);
  $('.edit-selection')?.classList.add('v54-gone');
  let lastSel=null;const oldPanel=renderPanel;renderPanel=function(){const r=oldPanel.apply(this,arguments);try{slimTransform();slimMatte();alignVis();$('.edit-selection')?.classList.add('v54-gone');
-  const lt=$('#layers .layer-toolbar h3');if(lt)lt.classList.add('v54-gone');
   if(layersBox&&tidy.lastElementChild!==layersBox)tidy.append(layersBox);
   // 没有展开的就默认打开「变换与图层」
   // 文字默认打开「文字」区,其他默认打开「变换与图层」;换选中的东西时重新按这个来
