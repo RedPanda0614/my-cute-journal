@@ -19,6 +19,8 @@
   try{const c=await draw(r);if(tickets.get(it)!==ticket||!alive(it)||JSON.stringify(it.editRecipe)!==serial)return;
    const a=await addAsset(c.toDataURL('image/png'),{name:it.name,source:'edit',hidden:true});
    if(tickets.get(it)!==ticket||!alive(it)||JSON.stringify(it.editRecipe)!==serial)return;
+   {const o=assets[it.asset];if(o&&o.w&&o.h&&(Math.abs(o.w/o.h-a.w/a.h)>.002||(!r.photo&&o.w!==a.w))){// v52:新图比例变了(抠完主体再加白边会裁掉透明边)就跟着改宽高,不拉伸
+     if(r.photo)it.h=it.w*a.h/a.w;else{const k=it.w/o.w;it.w=a.w*k;it.h=a.h*k}}}
    it.asset=a.id;it.editRenderKey=serial;it.colorAdjust={source:r.source,result:a.id,values:copy(r.tone)};renderItems();save();return it
   }catch(e){if(tickets.get(it)===ticket){toast('效果未完成：'+e.message);throw e}}
  }
