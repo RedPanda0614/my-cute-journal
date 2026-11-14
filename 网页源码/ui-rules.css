@@ -371,3 +371,8 @@ details.edit-section.v50-gone{display:none!important}
 #fontStyles .text-preview span:not(.sample){display:block!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
 .pn[data-pane=text] .text-library-tabs+.card-pane{border:none!important;margin-top:12px;padding-top:0}
 #layers .layer-toolbar h3{flex:0 0 100%;margin:0 0 4px}
+
+/* v56 从垫板外拉框 */
+#deskMarquee{position:fixed;z-index:40;border:1.5px dashed var(--accent);background:rgba(192,88,63,.08);pointer-events:none;border-radius:2px}
+#deskMarquee[hidden]{display:none}
+body.marqueeing,body.marqueeing *{user-select:none!important;cursor:crosshair!important}
